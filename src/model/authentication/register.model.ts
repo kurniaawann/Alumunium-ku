@@ -3,6 +3,5 @@ export class AuthenticationRegisterRequest {
   email: string;
   noHandphone: string;
   password: string;
-  address: string;
   isVerified: boolean;
 }

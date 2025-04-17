@@ -44,6 +44,7 @@ export class AuthenticationService {
   async registerService(
     request: AuthenticationRegisterRequest,
   ): Promise<object> {
+    console.log(request.name);
     this.logger.info(
       `${StringResource.SUCCESS_MESSAGES_TRIGGER_FUNCTION.SUCCESS_TRIGGER_FUNCTION_REGISTER_SERVICE} ${request.name}`,
     );
@@ -92,7 +93,11 @@ export class AuthenticationService {
     await this.prismaService.user.create({
       data: {
         userId: generateUserId,
-        ...registerRequest,
+        userName: registerRequest.name,
+        email: registerRequest.email,
+        noHandphone: registerRequest.noHandphone,
+        password: registerRequest.password,
+        isVerified: false,
       },
     });
 
@@ -128,15 +133,6 @@ export class AuthenticationService {
         otpCode: generateCodeOtp,
         createdAtOtp: createAt,
         expiresAtOtp: expires,
-      },
-    });
-
-    await this.prismaService.balance.create({
-      data: {
-        balanceId: `balance_id-${uuid()}`,
-        userId: generateUserId,
-        balanceEditBy: '',
-        totalBalance: 0,
       },
     });
 
@@ -211,89 +207,7 @@ export class AuthenticationService {
     }
 
     // return access token and refresh token;
-    const payload = { user_id: user.userId, role: user.role };
-    const accessToken = this.tokenService.generateAccessToken(payload);
-
-    this.logger.info(
-      `${StringResource.SUCCESS_MESSAGES_AUTHENTICATION.LOGIN_SUCCESS} ${loginRequest.email}`,
-    );
-    return {
-      data: {
-        accessToken,
-      },
-    };
-  }
-
-  async loginAdminService(
-    request: AuthenticationLoginRequest,
-  ): Promise<object> {
-    this.logger.info(
-      `${StringResource.SUCCESS_MESSAGES_TRIGGER_FUNCTION.SUCCESS_TRIGGER_FUNCTION_LOGIN_SERVICE} ${request.email}`,
-    );
-    const loginRequest: AuthenticationLoginRequest =
-      this.validationService.validate(AuthenticationValidation.LOGIN, request);
-
-    // Megambil data user
-    const user = await this.prismaService.user.findUnique({
-      where: {
-        email: loginRequest.email,
-      },
-    });
-
-    // Periksa apakah email ditemukan
-    if (!user) {
-      this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS} ${loginRequest.email}`,
-      );
-      throw new UnauthorizedException(
-        StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS,
-      );
-    }
-
-    if (user.role !== 'admin') {
-      this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.FORBIDDEN_ACCESS} ${loginRequest.email}`,
-      );
-      throw new ForbiddenException(
-        StringResource.FAILURE_MESSAGES_AUTHENTICATION.FORBIDDEN_ACCESS,
-      );
-    }
-
-    const isPasswordValid = await bcrypt.compare(
-      loginRequest.password,
-      user.password,
-    );
-
-    // Periksa apakah password sesuai
-    if (!isPasswordValid) {
-      this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS} ${loginRequest.email}`,
-      );
-      throw new UnauthorizedException(
-        StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS,
-      );
-    }
-
-    // Melakukan pengambilan data email yang sudah di verifikasi
-    const checkVerification = await this.prismaService.user.findUnique({
-      where: {
-        email: loginRequest.email,
-      },
-      select: { isVerified: true },
-    });
-
-    // Periksa apakah email sudah di verifikasi
-    if (!checkVerification.isVerified) {
-      this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_NOT_VERIFIED} ${loginRequest.email}`,
-      );
-      throw new ForbiddenException(
-        StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_NOT_VERIFIED,
-      );
-    }
-
-    // return access token and refresh token;
-    const payload = { user_id: user.userId, role: user.role };
+    const payload = { user_id: user.userId };
     const accessToken = this.tokenService.generateAccessToken(payload);
 
     this.logger.info(
@@ -440,7 +354,7 @@ export class AuthenticationService {
       select: {
         isVerified: true,
         userId: true, // Ambil userId sekaligus untuk efisiensi
-        name: true,
+        userName: true,
       },
     });
 
@@ -484,7 +398,7 @@ export class AuthenticationService {
     });
 
     const dataQueue = {
-      name: checkVerification.name,
+      name: checkVerification.userName,
       email: request.email,
       codeOtp: generateCodeOtp,
     };
@@ -588,7 +502,6 @@ export class AuthenticationService {
       },
       select: {
         userId: true,
-        role: true,
       },
     });
 
@@ -637,7 +550,7 @@ export class AuthenticationService {
       },
     });
 
-    const payload = { user_id: getUser.userId, role: getUser.role };
+    const payload = { user_id: getUser.userId };
     const accessToken = this.tokenService.generateAccessToken(payload);
 
     return {
@@ -645,30 +558,6 @@ export class AuthenticationService {
       message:
         StringResource.SUCCESS_MESSAGES_AUTHENTICATION
           .VERIFICATION_OTP_FORGOT_PASSWORD_SUCCESS,
-      data: {
-        accessToken,
-      },
-    };
-  }
-
-  async newAccessTokenService(request: { refreshToken: string }) {
-    this.validationService.validate(
-      AuthenticationValidation.REFRESHTOKEN,
-      request,
-    );
-
-    // Periksa apakah refresh token ada di database
-    await this.prismaService.authentication.findUnique({
-      where: { refreshToken: request.refreshToken },
-    });
-
-    // Verifikasi refresh token
-    const payload = this.tokenService.verifyRefreshToken(request.refreshToken);
-
-    // Hasilkan access token baru
-    const accessToken = this.tokenService.generateAccessToken(payload);
-
-    return {
       data: {
         accessToken,
       },
@@ -683,11 +572,11 @@ export class AuthenticationService {
 
     // Periksa apakah refresh token ada di database
     await this.prismaService.authentication.findUnique({
-      where: { refreshToken: request.refreshToken },
+      where: { accessToken: request.refreshToken },
     });
 
     await this.prismaService.authentication.delete({
-      where: { refreshToken: request.refreshToken },
+      where: { accessToken: request.refreshToken },
     });
 
     return {

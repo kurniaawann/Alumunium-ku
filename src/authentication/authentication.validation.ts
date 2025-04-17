@@ -8,6 +8,7 @@ export class AuthenticationValidation {
       .string({
         required_error: StringResource.ERROR_MESSAGES_VALIDATE.NAME_REQUIRED,
       })
+      .trim()
       .min(5, {
         message: StringResource.ERROR_MESSAGES_VALIDATE.NAME_MIN_LENGTH,
       })
@@ -53,17 +54,6 @@ export class AuthenticationValidation {
         message:
           StringResource.ERROR_MESSAGES_VALIDATE.PASSWORD_SPECIAL_CHARACTERS,
       }),
-
-    address: z
-      .string({
-        required_error: StringResource.ERROR_MESSAGES_VALIDATE.NAME_REQUIRED,
-      })
-      .min(20, {
-        message: StringResource.ERROR_MESSAGES_VALIDATE.ADDRESS_MIN_LENGTH,
-      })
-      .max(255, {
-        message: StringResource.ERROR_MESSAGES_VALIDATE.ADDRESS_MAX_LENGTH,
-      }),
   });
 
   static readonly LOGIN: ZodType = z.object({
@@ -99,24 +89,33 @@ export class AuthenticationValidation {
         required_error: StringResource.ERROR_MESSAGES_VALIDATE.EMAIL_REQUIRED,
       })
       .email({ message: StringResource.ERROR_MESSAGES_VALIDATE.EMAIL_FORMAT }),
-    // codeOtp: z
-    //   .string({ required_error: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_REQUIRED })
-    //   .min(4, { message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH })
-    //   .max(4, { message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH })
-    //   .regex(/^\d{4}$/, { message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_FORMAT }),
-
     codeOtp: z
-      .number({
+      .string({
         required_error:
           StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_REQUIRED,
       })
-      .int({ message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_INTEGER })
       .min(6, {
         message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
       })
       .max(6, {
         message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
+      })
+      .regex(/^\d{6}$/, {
+        message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_FORMAT,
       }),
+
+    // codeOtp: z
+    //   .number({
+    //     required_error:
+    //       StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_REQUIRED,
+    //   })
+    //   .int({ message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_INTEGER })
+    //   .min(6, {
+    //     message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
+    //   })
+    //   .max(6, {
+    //     message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
+    //   }),
   });
 
   static readonly RESENDVERIFICATIONCODEOTP: ZodType = z.object({

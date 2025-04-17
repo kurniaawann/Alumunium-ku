@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Put,
   Req,
   Request,
 } from '@nestjs/common';
@@ -31,12 +30,6 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() request: AuthenticationLoginRequest) {
     const result = await this.authenticationService.loginService(request);
-    return result;
-  }
-
-  @Post('/admin/login')
-  async loginAdmin(@Body() request: AuthenticationLoginRequest) {
-    const result = await this.authenticationService.loginAdminService(request);
     return result;
   }
 
@@ -81,13 +74,6 @@ export class AuthenticationController {
       request,
       userId,
     );
-    return result;
-  }
-  @HttpCode(HttpStatus.OK)
-  @Put('/new/access-token')
-  async refreshToken(@Body() request: { refreshToken: string }) {
-    const result =
-      await this.authenticationService.newAccessTokenService(request);
     return result;
   }
 

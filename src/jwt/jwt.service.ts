@@ -38,16 +38,4 @@ export class TokenService {
       );
     }
   }
-
-  verifyRefreshToken(token: string): TokenPayload {
-    try {
-      return this.jwtService.verify(token, {
-        secret: this.configService.get<string>('REFRESH_TOKEN'),
-      });
-    } catch {
-      throw new UnauthorizedException(
-        'Refresh token tidak valid atau sudah kadaluwarsa',
-      );
-    }
-  }
 }
