@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // Ganti dengan "mysql" / "sqlite" sesuai database kamu
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId     Int       @id @default(autoincrement()) @map("user_id")         // Primary key
+  nama       String    @db.VarChar(255)                                       // Nama user
+  email      String                                                         // Email user
+  password   String                                                          // Password user (hash)
+  createdAt  DateTime  @default(now())        @map("created_at")            // Tanggal pembuatan akun
+
+  stockLogs  StockLog[]                                                    // Relasi ke stock_logs
+
+  @@map("user")
+}
+
+model Item {
+  itemId     Int       @id @default(autoincrement()) @map("item_id")         // Primary key
+  nameItem       String    @db.VarChar(255) @map("name_item")                                    // Nama barang
+  itemCode   Int?                      @map("item_code")                      // Kode barang (opsional)
+  stock      Int                                                             // Jumlah stok saat ini
+  createdAt  DateTime  @default(now())        @map("created_at")             // Tanggal barang dibuat
+
+  incomingItems IncomingItem[]                                          // Relasi ke incoming_items
+  outgoingItems OutgoingItem[]   
+  usetItem UsedItem[]                                         // Relasi ke outgoing_items
+
+  @@map("items")
+}
+
+model IncomingItem {
+  incomingItemsId Int      @id @default(autoincrement()) @map("incoming_items_id") 
+  itemId          Int                                    @map("item_id")     // Foreign key ke items
+  quantity        Int                                                             // Jumlah barang masuk
+  receivedBy      String    @db.VarChar(100)             @map("received_by")     // Diterima oleh siapa
+  createdAt       DateTime                               @map("created_at")     // Tanggal barang masuk
+
+  item            Item      @relation(fields: [itemId], references: [itemId])    // Relasi ke Item
+
+  @@map("incoming_items")
+}
+
+model OutgoingItem {
+  incomingItemsId Int    @id                      @map("incoming_items_id")     // Primary key (relasi langsung)
+  itemId          Int                              @map("item_id")               // Foreign key ke item
+  quantity        Int                                                             // Jumlah barang keluar
+  sentTo          String @db.VarChar(100)          @map("sent_to")              // Barang dikirim ke mana
+  handledBy       String @db.VarChar(100)          @map("handled_by")           // Ditangani oleh siapa
+  description     String @db.Text                                                      // Keterangan tambahan (opsional)
+
+  item            Item         @relation(fields: [itemId], references: [itemId])                   // Relasi ke item
+
+  @@map("outgoing_items")
+}
+
+model StockLog {
+  logId      Int       @id @default(autoincrement())                          // Primary key untuk setiap log
+  userId     Int                                                @map("user_id")      // Foreign key ke User
+  changeType ChangeType                                         @map("change_type")  // Jenis perubahan stok: IN / OUT
+  quantity   Int                                                                 // Jumlah yang berubah
+  description String    @db.Text                                                  // Deskripsi aktivitas
+  createdAt  DateTime   @default(now())                 @map("created_at")         // Waktu log dibuat
+
+  user       User       @relation(fields: [userId], references: [userId])      // Relasi ke user
+
+  @@map("stock_logs")
+}
+
+model UsedItem {
+  usedItemId  Int       @id @default(autoincrement()) @map("used_item_id")       // Primary key
+  itemId      Int                                        @map("item_id")           // Foreign key ke item
+  quantity    Int                                                                  // Jumlah barang yang digunakan
+  usedBy      String    @db.VarChar(100)                @map("used_by")           // Digunakan oleh siapa
+  purpose     String    @db.Text                                                           // Keperluan penggunaan (opsional)
+  createdAt   DateTime  @default(now())                  @map("created_at")       // Waktu digunakan
+
+  item        Item      @relation(fields: [itemId], references: [itemId])        // Relasi ke item
+
+  @@map("used_items")
+}
+
+enum ChangeType {
+  IN
+  OUT
+  USED
+}
