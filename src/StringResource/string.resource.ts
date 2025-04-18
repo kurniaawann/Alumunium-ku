@@ -57,8 +57,8 @@ export class StringResource {
     CODE_OTP_FORMAT: 'OTP harus terdiri dari 6 angka',
     CODE_OTP_INTEGER: 'OTP harus terdiri dari 6 angka',
 
-    REFRESHTOKEN_REQUIRED: 'Refresh token tidak boleh kosong',
-    REFRESHTOKEN_TIPE: 'Refresh token harus berupa string',
+    ACCESS_TOKEN_REQUIRED: 'Access token tidak boleh kosong',
+    ACCESS_TOKEN_TIPE: 'Access token harus berupa string',
 
     DESCRIPTION_TIPE: 'Deskripsi harus berupa string',
     DESCRIPTION_MIN_LENGTH: 'Deskripsi minimal 20 Karakter',

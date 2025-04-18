@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthenticationModule } from './authentication/authentication.module';
+import { AuthenticationModule } from './api/authentication/authentication.module';
+import { ItemModule } from './api/items/items.module';
 import { CommanModule } from './common/comman.module';
 import { JwtAuthModule } from './jwt/jwt.module';
 import { RabbitModule } from './rabbitMq/rabbitmq.module';
@@ -11,6 +12,7 @@ import { RabbitModule } from './rabbitMq/rabbitmq.module';
     JwtAuthModule,
     AuthenticationModule,
     CommanModule,
+    ItemModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

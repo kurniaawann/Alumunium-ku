@@ -20,13 +20,6 @@ export class TokenService {
     });
   }
 
-  generateRefreshToken(payload: TokenPayload): string {
-    return this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('REFRESH_TOKEN'),
-      expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRES_IN'),
-    });
-  }
-
   verifyAccessToken(token: string): TokenPayload {
     try {
       return this.jwtService.verify(token, {

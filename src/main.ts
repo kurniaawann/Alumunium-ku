@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -19,6 +20,7 @@ async function bootstrap() {
   // Atur global prefix untuk API
   app.setGlobalPrefix('api');
 
+  app.useGlobalPipes(new ValidationPipe());
   // Register interceptor sebelum app.listen
   app.useGlobalInterceptors(new SnakeCaseInterceptor());
 

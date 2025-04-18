@@ -8,11 +8,15 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
-import { ForgotPasswordRequest } from 'src/model/authentication/ForgotPassword.model';
-import { AuthenticationLoginRequest } from 'src/model/authentication/login.model';
-import { AuthenticationRegisterRequest } from 'src/model/authentication/register.model';
-import { VerificationOtpRequest } from 'src/model/authentication/VerificationOtp.model';
-import { VerificationOtpForgotPasswordRequest } from 'src/model/authentication/VerificationOtpForgotPassword.model';
+import {
+  accessTokenDto,
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResendVerificationCodeOtpDto,
+  VerificationCodeOtpDto,
+  VerificationForgotPasswordDto,
+} from 'src/DTO/dto.authentication';
 import { AuthenticationService } from './authentication.service';
 
 @Controller('/authentication')
@@ -21,14 +25,14 @@ export class AuthenticationController {
 
   @Post('/register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() request: AuthenticationRegisterRequest) {
+  async register(@Body() request: RegisterDto) {
     const result = await this.authenticationService.registerService(request);
     return result;
   }
 
   @Post('/login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() request: AuthenticationLoginRequest) {
+  async login(@Body() request: LoginDto) {
     const result = await this.authenticationService.loginService(request);
     return result;
   }
@@ -36,7 +40,7 @@ export class AuthenticationController {
   @Post('/user/verification')
   @HttpCode(HttpStatus.OK)
   async verificationOtp(
-    @Body() request: VerificationOtpRequest,
+    @Body() request: VerificationCodeOtpDto,
     @Req() req: Request,
   ) {
     const result = await this.authenticationService.verificationUserService(
@@ -47,15 +51,16 @@ export class AuthenticationController {
   }
   @Post('/send/otp')
   @HttpCode(HttpStatus.CREATED)
-  async resendVerificationOtp(@Body() request: { email: string }) {
+  async resendVerificationOtp(@Body() request: ResendVerificationCodeOtpDto) {
     const result =
       await this.authenticationService.sendVerificationOtpService(request);
     return result;
   }
+
   @Post('/user/forgot-password/verification')
   @HttpCode(HttpStatus.CREATED)
   async verificationForgotPassword(
-    @Body() request: VerificationOtpForgotPasswordRequest,
+    @Body() request: VerificationForgotPasswordDto,
     @Req() req: Request,
   ) {
     const result =
@@ -68,7 +73,7 @@ export class AuthenticationController {
 
   @Post('/forgot/password')
   @HttpCode(HttpStatus.CREATED)
-  async forgotPassword(@Request() req, @Body() request: ForgotPasswordRequest) {
+  async forgotPassword(@Request() req, @Body() request: ForgotPasswordDto) {
     const userId: string = req.user.user_id;
     const result = await this.authenticationService.forgotPassword(
       request,
@@ -79,7 +84,7 @@ export class AuthenticationController {
 
   @Delete('/logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Body() request: { refreshToken: string }) {
+  async logout(@Body() request: accessTokenDto) {
     const result = await this.authenticationService.logoutService(request);
     return result;
   }

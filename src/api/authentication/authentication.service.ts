@@ -10,25 +10,26 @@ import {
 import * as bcrypt from 'bcrypt';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
-import { ValidationService } from 'src/common/validation.service';
+import {
+  accessTokenDto,
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResendVerificationCodeOtpDto,
+  VerificationCodeOtpDto,
+  VerificationForgotPasswordDto,
+} from 'src/DTO/dto.authentication';
 import { TokenService } from 'src/jwt/jwt.service';
 import { OtpVerificationRateLimitMiddleware } from 'src/middleware/LimitValidateOtp.middleware';
-import { ForgotPasswordRequest } from 'src/model/authentication/ForgotPassword.model';
-import { AuthenticationLoginRequest } from 'src/model/authentication/login.model';
-import { AuthenticationRegisterRequest } from 'src/model/authentication/register.model';
-import { VerificationOtpRequest } from 'src/model/authentication/VerificationOtp.model';
-import { VerificationOtpForgotPasswordRequest } from 'src/model/authentication/VerificationOtpForgotPassword.model';
 import { RabbitMqService } from 'src/rabbitMq/rabbitmq.service';
 import { StringResource } from 'src/StringResource/string.resource';
 import { generateOTP } from 'src/utils/generate.otp';
 import { v4 as uuid } from 'uuid';
 import { Logger } from 'winston';
-import { AuthenticationValidation } from './authentication.validation';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
-    private validationService: ValidationService,
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prismaService: PrismaService,
     private readonly rabbitMqService: RabbitMqService,
@@ -41,23 +42,16 @@ export class AuthenticationService {
     );
   }
 
-  async registerService(
-    request: AuthenticationRegisterRequest,
-  ): Promise<object> {
+  async registerService(request: RegisterDto): Promise<object> {
     console.log(request.name);
     this.logger.info(
       `${StringResource.SUCCESS_MESSAGES_TRIGGER_FUNCTION.SUCCESS_TRIGGER_FUNCTION_REGISTER_SERVICE} ${request.name}`,
     );
-    const registerRequest: AuthenticationRegisterRequest =
-      this.validationService.validate(
-        AuthenticationValidation.REGISTER,
-        request,
-      );
 
     // Melakukan pengecekan duplikasi email
     const checkEmail = await this.prismaService.user.findUnique({
       where: {
-        email: registerRequest.email,
+        email: request.email,
       },
     });
 
@@ -73,49 +67,49 @@ export class AuthenticationService {
     // Melakukan pengecekan duplikasi no handphone
     const checkNoHandphone = await this.prismaService.user.findUnique({
       where: {
-        noHandphone: registerRequest.noHandphone,
+        noHandphone: request.noHandphone,
       },
     });
 
     if (checkNoHandphone) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.PHONE_ALREADY_USED} ${registerRequest.email}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.PHONE_ALREADY_USED} ${request.email}`,
       );
       throw new BadRequestException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.PHONE_ALREADY_USED,
       );
     }
 
-    registerRequest.password = await bcrypt.hash(registerRequest.password, 10);
+    request.password = await bcrypt.hash(request.password, 10);
 
     const generateUserId: string = `user-${uuid()}`;
     // Buat User Baru
     await this.prismaService.user.create({
       data: {
         userId: generateUserId,
-        userName: registerRequest.name,
-        email: registerRequest.email,
-        noHandphone: registerRequest.noHandphone,
-        password: registerRequest.password,
+        userName: request.name,
+        email: request.email,
+        noHandphone: request.noHandphone,
+        password: request.password,
         isVerified: false,
       },
     });
 
     this.logger.info(
-      `${StringResource.SUCCESS_MESSAGES_AUTHENTICATION.REGISTRATION_SUCCESS} ${registerRequest.name}`,
+      `${StringResource.SUCCESS_MESSAGES_AUTHENTICATION.REGISTRATION_SUCCESS} ${request.name}`,
     );
 
     const generateCodeOtp: string = generateOTP();
 
     const dataQueue = {
-      name: registerRequest.name,
-      email: registerRequest.email,
+      name: request.name,
+      email: request.email,
       codeOtp: generateCodeOtp,
     };
 
     const getIdUser = await this.prismaService.user.findUnique({
       where: {
-        email: registerRequest.email,
+        email: request.email,
       },
       select: {
         userId: true,
@@ -149,24 +143,22 @@ export class AuthenticationService {
     };
   }
 
-  async loginService(request: AuthenticationLoginRequest): Promise<object> {
+  async loginService(request: LoginDto): Promise<object> {
     this.logger.info(
       `${StringResource.SUCCESS_MESSAGES_TRIGGER_FUNCTION.SUCCESS_TRIGGER_FUNCTION_LOGIN_SERVICE} ${request.email}`,
     );
-    const loginRequest: AuthenticationLoginRequest =
-      this.validationService.validate(AuthenticationValidation.LOGIN, request);
 
     // Megambil data user
     const user = await this.prismaService.user.findUnique({
       where: {
-        email: loginRequest.email,
+        email: request.email,
       },
     });
 
     // Periksa apakah email ditemukan
     if (!user) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS} ${loginRequest.email}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS} ${request.email}`,
       );
       throw new UnauthorizedException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS,
@@ -174,14 +166,14 @@ export class AuthenticationService {
     }
 
     const isPasswordValid = await bcrypt.compare(
-      loginRequest.password,
+      request.password,
       user.password,
     );
 
     // Periksa apakah password sesuai
     if (!isPasswordValid) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS} ${loginRequest.email}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS} ${request.email}`,
       );
       throw new UnauthorizedException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_CREDENTIALS,
@@ -191,7 +183,7 @@ export class AuthenticationService {
     // Melakukan pengambilan data email yang sudah di verifikasi
     const checkVerification = await this.prismaService.user.findUnique({
       where: {
-        email: loginRequest.email,
+        email: request.email,
       },
       select: { isVerified: true },
     });
@@ -199,7 +191,7 @@ export class AuthenticationService {
     // Periksa apakah email sudah di verifikasi
     if (!checkVerification.isVerified) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_NOT_VERIFIED} ${loginRequest.email}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_NOT_VERIFIED} ${request.email}`,
       );
       throw new ForbiddenException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_NOT_VERIFIED,
@@ -211,7 +203,7 @@ export class AuthenticationService {
     const accessToken = this.tokenService.generateAccessToken(payload);
 
     this.logger.info(
-      `${StringResource.SUCCESS_MESSAGES_AUTHENTICATION.LOGIN_SUCCESS} ${loginRequest.email}`,
+      `${StringResource.SUCCESS_MESSAGES_AUTHENTICATION.LOGIN_SUCCESS} ${request.email}`,
     );
     return {
       data: {
@@ -221,21 +213,16 @@ export class AuthenticationService {
   }
 
   async verificationUserService(
-    request: VerificationOtpRequest,
+    request: VerificationCodeOtpDto,
     path: string,
   ): Promise<object> {
     this.logger.info(
       `${StringResource.SUCCESS_MESSAGES_TRIGGER_FUNCTION.SUCCESS_TRIGGER_FUNCTION_VERIFICATION_SERVICE} ${request.email}`,
     );
-    const verificationUser: VerificationOtpRequest =
-      this.validationService.validate(
-        AuthenticationValidation.VERIFICATIONCODEOTP,
-        request,
-      );
 
     const getIdUser = await this.prismaService.user.findUnique({
       where: {
-        email: verificationUser.email,
+        email: request.email,
       },
       select: {
         userId: true,
@@ -244,7 +231,7 @@ export class AuthenticationService {
     //Melakukan pengambilan data email yang sudah di verifikasi
     const checkVerification = await this.prismaService.user.findUnique({
       where: {
-        email: verificationUser.email,
+        email: request.email,
       },
       select: { isVerified: true },
     });
@@ -252,7 +239,7 @@ export class AuthenticationService {
     //Melakukan pengecekan apakah email sudah terdaftar?
     if (!checkVerification) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.EMAIL_NOT_REGISTERED} ${verificationUser.email}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.EMAIL_NOT_REGISTERED} ${request.email}`,
       );
       throw new NotFoundException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.EMAIL_NOT_REGISTERED,
@@ -262,7 +249,7 @@ export class AuthenticationService {
     //melakukan pengecekan apakah email sudah di verifikasi?
     if (checkVerification.isVerified) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_ALREADY_VERIFIED} ${verificationUser.email}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_ALREADY_VERIFIED} ${request.email}`,
       );
       throw new ForbiddenException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.ACCOUNT_ALREADY_VERIFIED,
@@ -272,7 +259,7 @@ export class AuthenticationService {
     } else {
       //Mengambil User id
 
-      const userOtp = verificationUser.codeOtp;
+      const userOtp = request.codeOtp;
 
       console.log(userOtp.toString());
 
@@ -287,7 +274,7 @@ export class AuthenticationService {
       //Melakukan pengecekan ketika OTP tidak ada di database
       if (!checkOtpVerification) {
         this.logger.warn(
-          `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_INVALID_OR_EXPIRED}. ${verificationUser.email}`,
+          `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_INVALID_OR_EXPIRED}. ${request.email}`,
         );
         throw new BadRequestException(
           StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_INVALID_OR_EXPIRED,
@@ -299,7 +286,7 @@ export class AuthenticationService {
       // Periksa apakah waktu sekarang sudah melewati waktu kedaluwarsa
       if (currentTime > new Date(checkOtpVerification.expiresAtOtp)) {
         this.logger.warn(
-          `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_EXPIRED}. ${verificationUser.codeOtp}`,
+          `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_EXPIRED}. ${request.codeOtp}`,
         );
         throw new BadRequestException(
           StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_EXPIRED,
@@ -333,17 +320,11 @@ export class AuthenticationService {
     };
   }
 
-  async sendVerificationOtpService(request: {
-    email: string;
-  }): Promise<object> {
+  async sendVerificationOtpService(
+    request: ResendVerificationCodeOtpDto,
+  ): Promise<object> {
     this.logger.info(
       `${StringResource.SUCCESS_MESSAGES_TRIGGER_FUNCTION.SUCCESS_TRIGGER_FUNCTION_RESEND_VERIFICATION_SERVICE} ${JSON.stringify(request.email)}`,
-    );
-
-    // Validasi email
-    this.validationService.validate(
-      AuthenticationValidation.RESENDVERIFICATIONCODEOTP,
-      request,
     );
 
     // Periksa apakah email terdaftar dan verifikasi statusnya
@@ -418,16 +399,9 @@ export class AuthenticationService {
   }
 
   async forgotPassword(
-    request: ForgotPasswordRequest,
+    request: ForgotPasswordDto,
     userId: string,
   ): Promise<object> {
-    // Validate request
-    const forgotPasswordRequest: ForgotPasswordRequest =
-      this.validationService.validate(
-        AuthenticationValidation.FORGOTPASSWORD,
-        request,
-      );
-
     // Find user
     const user = await this.prismaService.user.findUnique({
       where: { userId: userId },
@@ -444,7 +418,7 @@ export class AuthenticationService {
     }
 
     const isPasswordValid = await bcrypt.compare(
-      forgotPasswordRequest.oldPassword,
+      request.oldPassword,
       user.password,
     );
 
@@ -457,19 +431,14 @@ export class AuthenticationService {
       );
     }
 
-    if (
-      forgotPasswordRequest.newPassword == forgotPasswordRequest.oldPassword
-    ) {
+    if (request.newPassword == request.oldPassword) {
       throw new BadRequestException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.PASSWORD_SAME,
       );
     }
 
     // Hash new password
-    const hashedPassword = await bcrypt.hash(
-      forgotPasswordRequest.newPassword,
-      10,
-    );
+    const hashedPassword = await bcrypt.hash(request.newPassword, 10);
 
     // Update password
     await this.prismaService.user.update({
@@ -485,20 +454,13 @@ export class AuthenticationService {
   }
 
   async verificationOtpForgotPassword(
-    request: VerificationOtpForgotPasswordRequest,
+    request: VerificationForgotPasswordDto,
     path: string,
   ): Promise<object> {
-    // Validasi request
-    const verificationRequest: VerificationOtpForgotPasswordRequest =
-      this.validationService.validate(
-        AuthenticationValidation.VERIFICATIONFORGOTPASSWORD,
-        request,
-      );
-
     // Ambil user berdasarkan email
     const getUser = await this.prismaService.user.findUnique({
       where: {
-        email: verificationRequest.email,
+        email: request.email,
       },
       select: {
         userId: true,
@@ -514,7 +476,7 @@ export class AuthenticationService {
     // Cek verifikasi OTP
     const checkOtpVerification = await this.prismaService.otp.findFirst({
       where: {
-        otpCode: verificationRequest.codeOtp.toString(),
+        otpCode: request.codeOtp.toString(),
         userId: getUser.userId,
       },
     });
@@ -522,7 +484,7 @@ export class AuthenticationService {
     console.log(checkOtpVerification);
     if (!checkOtpVerification) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_INVALID_OR_EXPIRED}. ${verificationRequest.email}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_INVALID_OR_EXPIRED}. ${request.email}`,
       );
       throw new BadRequestException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_INVALID_OR_EXPIRED,
@@ -534,7 +496,7 @@ export class AuthenticationService {
     // Periksa apakah waktu sekarang sudah melewati waktu kedaluwarsa OTP
     if (currentTime > new Date(checkOtpVerification.expiresAtOtp)) {
       this.logger.warn(
-        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_EXPIRED}. ${verificationRequest.codeOtp}`,
+        `${StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_EXPIRED}. ${request.codeOtp}`,
       );
       throw new BadRequestException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.OTP_EXPIRED,
@@ -564,19 +526,14 @@ export class AuthenticationService {
     };
   }
 
-  async logoutService(request: { refreshToken: string }) {
-    this.validationService.validate(
-      AuthenticationValidation.REFRESHTOKEN,
-      request,
-    );
-
+  async logoutService(request: accessTokenDto) {
     // Periksa apakah refresh token ada di database
     await this.prismaService.authentication.findUnique({
-      where: { accessToken: request.refreshToken },
+      where: { accessToken: request.accessToken },
     });
 
     await this.prismaService.authentication.delete({
-      where: { accessToken: request.refreshToken },
+      where: { accessToken: request.accessToken },
     });
 
     return {
