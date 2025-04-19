@@ -4,8 +4,10 @@ import {
   Delete,
   Get,
   Param,
+  ParseBoolPipe,
   Post,
   Put,
+  Query,
   Request,
 } from '@nestjs/common';
 import { ItemDto } from 'src/DTO/dto.item';
@@ -15,7 +17,7 @@ import { ItemService } from './items.service';
 export class ItemController {
   constructor(private itemService: ItemService) {}
   @Post('')
-  async createItem(@Body() request: ItemDto, @Request() req) {
+  async createItem(@Body('items') request: ItemDto[], @Request() req) {
     const userId: string = req.user.user_id;
     console.log(userId);
     const result = await this.itemService.createItemService(request, userId);
@@ -40,8 +42,22 @@ export class ItemController {
   }
 
   @Get('all')
-  async getAllItem(@Request() req) {
-    const result = await this.itemService.getAllItemService();
+  async getAllItem(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('isDeleted', ParseBoolPipe) isDeleted: boolean,
+  ) {
+    const pageInt: number = isNaN(parseInt(page ?? '1', 10))
+      ? 1
+      : parseInt(page ?? '1', 10);
+    const limitInt: number = isNaN(parseInt(limit ?? '10', 10))
+      ? 10
+      : parseInt(limit ?? '10', 10);
+    const result = await this.itemService.getAllItemService(
+      pageInt,
+      limitInt,
+      isDeleted,
+    );
     return result;
   }
 }

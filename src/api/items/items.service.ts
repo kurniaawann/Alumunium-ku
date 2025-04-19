@@ -8,6 +8,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ItemDto } from 'src/DTO/dto.item';
 import { StringResource } from 'src/StringResource/string.resource';
+import { calculateNextPage } from 'src/utils/PaginatedResponse/CalculateNextpage';
+import { calculatePreviousPage } from 'src/utils/PaginatedResponse/CalculatePreviousPage';
+import { calculateTotalPages } from 'src/utils/PaginatedResponse/CalculateTotalPages';
+import { createPaginatedResponse } from 'src/utils/PaginatedResponse/PaginatedResponse';
 import { v4 as uuid } from 'uuid';
 import { Logger } from 'winston';
 
@@ -18,9 +22,7 @@ export class ItemService {
     private prismaService: PrismaService,
   ) {}
 
-  async createItemService(request: ItemDto, userId: string) {
-    const generateItemId: string = `item-id-${uuid()}`;
-
+  async createItemService(request: ItemDto[], userId: string) {
     const existingUser = await this.prismaService.user.findUnique({
       where: {
         userId: userId,
@@ -36,12 +38,17 @@ export class ItemService {
       );
     }
 
-    await this.prismaService.item.create({
-      data: {
-        itemId: generateItemId,
-        createdBy: existingUser.userName,
-        ...request,
-      },
+    const itemsToCreate = request.map((item) => ({
+      itemId: `item-id-${uuid()}`,
+      itemName: item.itemName,
+      itemCode: item.itemCode,
+      stock: item.stock,
+      createdBy: existingUser.userName,
+    }));
+
+    await this.prismaService.item.createMany({
+      data: itemsToCreate,
+      skipDuplicates: false, // opsional
     });
 
     return {
@@ -129,5 +136,36 @@ export class ItemService {
       statusCode: HttpStatus.OK,
       message: 'Item berhasil dihapus',
     };
+  }
+
+  async getAllItemService(page: number, limit: number, isDeleted: boolean) {
+    const validPageParams = Math.max(1, page);
+    const validLimitParams = Math.max(1, limit);
+    const skip = (validPageParams - 1) * validLimitParams;
+
+    const items = await this.prismaService.item.findMany({
+      where: {
+        isDelete: isDeleted, // hanya ambil item yang belum dihapus
+      },
+      skip,
+      take: validLimitParams,
+      orderBy: {
+        createdAt: 'desc', // opsional: urutkan dari yang terbaru
+      },
+    });
+
+    const totalPages = calculateTotalPages(items.length, validLimitParams);
+    const nextPage = calculateNextPage(validPageParams, totalPages);
+    const previousPage = calculatePreviousPage(validPageParams);
+
+    return createPaginatedResponse({
+      data: items,
+      totalData: items.length,
+      previousPage,
+      nextPage,
+      totalPages,
+      currentPage: validPageParams,
+      limit: validLimitParams,
+    });
   }
 }
