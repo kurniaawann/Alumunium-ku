@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
-import { CreateItemDto, CreateItemIncomingDto } from 'src/DTO/dto.item';
+import { ItemDto } from 'src/DTO/dto.item';
 import { StringResource } from 'src/StringResource/string.resource';
 import { v4 as uuid } from 'uuid';
 import { Logger } from 'winston';
@@ -18,47 +18,8 @@ export class ItemService {
     private prismaService: PrismaService,
   ) {}
 
-  async createItemService(request: CreateItemDto) {
+  async createItemService(request: ItemDto, userId: string) {
     const generateItemId: string = `item-id-${uuid()}`;
-
-    await this.prismaService.item.create({
-      data: {
-        itemId: generateItemId,
-        ...request,
-      },
-    });
-
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Item stok berhasil dibuat',
-    };
-  }
-
-  async editItemService(request: CreateItemDto, id: string) {
-    await this.prismaService.item.update({
-      where: { itemId: id },
-      data: {
-        ...request,
-      },
-    });
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Item stok berhasil di edit',
-    };
-  }
-
-  async createIncomingItemService(
-    request: CreateItemIncomingDto,
-    userId: string,
-  ) {
-    const generateItemId = `item-id-${uuid()}`;
-    const generateIncomingItemId = `incoming-item-id-${uuid()}`;
-
-    // Normalize nama barang
-    const normalizedItemName = request.itemName
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, ' ');
 
     const existingUser = await this.prismaService.user.findUnique({
       where: {
@@ -75,62 +36,56 @@ export class ItemService {
       );
     }
 
-    // Cek apakah item sudah ada dengan nama yang sudah dinormalisasi
-    const existingItem = await this.prismaService.item.findFirst({
-      where: {
-        itemName: {
-          equals: normalizedItemName,
-        },
+    await this.prismaService.item.create({
+      data: {
+        itemId: generateItemId,
+        createdBy: existingUser.userName,
+        ...request,
       },
     });
 
-    if (existingItem) {
-      // Jika item sudah ada, tinggal update stock dan buat incoming
-      await this.prismaService.incomingItem.create({
-        data: {
-          incomingItemsId: generateIncomingItemId,
-          itemId: existingItem.itemId,
-          quantity: request.quantity,
-          receivedBy: existingUser.userName,
-        },
-      });
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Item stok berhasil dibuat',
+    };
+  }
 
-      await this.prismaService.item.update({
-        where: { itemId: existingItem.itemId },
-        data: {
-          stock: { increment: request.quantity },
-        },
-      });
+  async editItemService(request: ItemDto, id: string, userId: string) {
+    const existingId = await this.prismaService.item.findUnique({
+      where: {
+        itemId: id,
+      },
+    });
+    const existingUser = await this.prismaService.user.findUnique({
+      where: {
+        userId: userId,
+      },
+      select: {
+        userName: true,
+      },
+    });
 
-      return {
-        statusCode: HttpStatus.OK,
-        message:
-          'Barang masuk ditambahkan ke item yang sudah ada, stok diperbarui.',
-      };
-    } else {
-      // Buat item baru dengan nama yang sudah dinormalisasi
-      await this.prismaService.item.create({
-        data: {
-          itemId: generateItemId,
-          itemName: normalizedItemName,
-          itemCode: request.itemCode,
-          stock: request.quantity,
-        },
-      });
-
-      await this.prismaService.incomingItem.create({
-        data: {
-          incomingItemsId: generateIncomingItemId,
-          itemId: generateItemId,
-          quantity: request.quantity,
-          receivedBy: existingUser.userName,
-        },
-      });
-
-      return {
-        statusCode: HttpStatus.CREATED,
-        message: 'Item baru berhasil dibuat dan barang masuk dicatat.',
-      };
+    if (!existingId) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
     }
+
+    if (!existingUser) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
+    }
+    await this.prismaService.item.update({
+      where: { itemId: existingId.itemId },
+      data: {
+        updatedBy: existingUser.userName,
+        ...request,
+      },
+    });
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Item berhasil diperbaharui',
+    };
   }
 }

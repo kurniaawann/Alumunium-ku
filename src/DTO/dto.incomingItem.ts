@@ -7,7 +7,15 @@ import {
 } from 'class-validator';
 import { StringResource } from 'src/StringResource/string.resource';
 
-export class ItemDto {
+export class IncomingItemDto {
+  @IsInt({
+    message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
+  })
+  @IsNotEmpty({
+    message: StringResource.ERROR_MESSAGES_VALIDATE.QUANTUITY_REQUIRED,
+  })
+  quantity: number;
+
   @IsNotEmpty({
     message: StringResource.ERROR_MESSAGES_VALIDATE.NAME_REQUIRED,
   })

@@ -205,6 +205,12 @@ export class AuthenticationService {
     this.logger.info(
       `${StringResource.SUCCESS_MESSAGES_AUTHENTICATION.LOGIN_SUCCESS} ${request.email}`,
     );
+
+    await this.prismaService.authentication.create({
+      data: {
+        accessToken,
+      },
+    });
     return {
       data: {
         accessToken,
@@ -528,11 +534,11 @@ export class AuthenticationService {
 
   async logoutService(request: accessTokenDto) {
     // Periksa apakah refresh token ada di database
-    await this.prismaService.authentication.findUnique({
+    await this.prismaService.authentication.findFirst({
       where: { accessToken: request.accessToken },
     });
 
-    await this.prismaService.authentication.delete({
+    await this.prismaService.authentication.deleteMany({
       where: { accessToken: request.accessToken },
     });
 

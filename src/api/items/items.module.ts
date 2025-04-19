@@ -12,6 +12,7 @@ import { ItemService } from './items.service';
 })
 export class ItemModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer.apply(JwtMiddlewareUser).forRoutes('/item*');
     consumer.apply(JwtMiddlewareUser).forRoutes('/item/*');
   }
 }
