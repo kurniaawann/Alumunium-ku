@@ -88,4 +88,46 @@ export class ItemService {
       message: 'Item berhasil diperbaharui',
     };
   }
+
+  async deleteItemService(id: string, userId: string) {
+    const existingId = await this.prismaService.item.findUnique({
+      where: {
+        itemId: id,
+      },
+    });
+    const existingUser = await this.prismaService.user.findUnique({
+      where: {
+        userId: userId,
+      },
+      select: {
+        userName: true,
+      },
+    });
+
+    if (!existingId) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
+    }
+
+    if (!existingUser) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
+    }
+
+    await this.prismaService.item.update({
+      where: { itemId: id },
+      data: {
+        isDelete: true,
+        deleteBy: existingUser.userName,
+        deleteAt: new Date(),
+      },
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Item berhasil dihapus',
+    };
+  }
 }

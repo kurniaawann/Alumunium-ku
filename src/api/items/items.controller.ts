@@ -1,4 +1,13 @@
-import { Body, Controller, Param, Post, Put, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Request,
+} from '@nestjs/common';
 import { ItemDto } from 'src/DTO/dto.item';
 import { ItemService } from './items.service';
 
@@ -21,6 +30,18 @@ export class ItemController {
   ) {
     const userId: string = req.user.user_id;
     const result = await this.itemService.editItemService(request, id, userId);
+    return result;
+  }
+  @Delete('/:id')
+  async deleteItem(@Param('id') id: string, @Request() req) {
+    const userId: string = req.user.user_id;
+    const result = await this.itemService.deleteItemService(id, userId);
+    return result;
+  }
+
+  @Get('all')
+  async getAllItem(@Request() req) {
+    const result = await this.itemService.getAllItemService();
     return result;
   }
 }
