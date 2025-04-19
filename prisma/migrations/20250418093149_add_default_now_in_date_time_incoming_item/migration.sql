@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `incoming_items` MODIFY `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
