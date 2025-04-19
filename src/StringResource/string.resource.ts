@@ -27,17 +27,10 @@ export class StringResource {
   static readonly ERROR_MESSAGES_VALIDATE = {
     NAME_REQUIRED: 'Nama tidak boleh kosong',
     NAME_MIN_LENGTH: 'Nama minimal 5 Karakter',
-    NAME_MAX_LENGTH: 'Nama maksimal 50 karakter',
-
-    NAME_TRASH_REQUIRED: 'Nama sampah tidak boleh kosong',
-    NAME_TRASH_MIN_LENGTH: 'Nama sampah minimal 5 Karakter',
-    NAME_TRASH_MAX_LENGTH: 'Nama sampah maksimal 255 karakter',
+    NAME_MAX_LENGTH: 'Nama maksimal 255 karakter',
 
     EMAIL_REQUIRED: 'Email tidak boleh kosong',
     EMAIL_FORMAT: 'Format email tidak sesuai',
-
-    ADDRESS_MIN_LENGTH: 'Alamat minimal 10 Karakter',
-    ADDRESS_MAX_LENGTH: 'Alamat maksimal 255 Karakter',
 
     PHONE_REQUIRED: 'No handphone tidak boleh kosong',
     PHONE_FORMAT: 'Nomor handphone harus dimulai dengan 08',
@@ -65,24 +58,18 @@ export class StringResource {
     DESCRIPTION_MAX_LENGTH: 'Deskripsi maksimal 255 Karakter',
     DESCRIPTION_REQUIRED: 'Deskripsi tidak boleh kosong',
 
-    PRICE_REQUIRED: 'Harga tidak boleh kosong',
-    PRICE_INTEGER: 'Harga harus berupa angka',
+    NUMBER: 'Harus berisi angka',
 
-    PRICE_TRASH_REQUIRED: 'Harga sampah tidak boleh kosong',
+    STOCK_REQUIRED: 'Stock tidak boleh kosong',
 
-    WEIGHT_TRASH_REQUIRED: 'Berat sampah tidak boleh kosong',
+    QUANTUITY_REQUIRED: 'Quantity tidak boleh kosong',
 
-    TYPE_TRASH_REQUIRED: 'Tipe sampah tidak boleh kosong',
-    TYPE_TRASH_MIN_LENGTH: 'Tipe sampah minimal 5 Karakter',
-    TYPE_TRASH_MAX_LENGTH: 'Tipe sampah maksimal 255 karakter',
+    RECEIVED_BY_REQUIRED: 'Penerima tidak boleh kosong',
+    RECEIVED_BY_MAX_LENGTH: 'Nama maksimal 100 karakter',
+  };
 
-    REASON_UPDATE_REQUIRED: 'Alasan pembaharuan harus terisi',
-    REASON_UPDATE_MIN_LENGTH: 'Alasan pembaharuan minimal 10 Karakter',
-    REASON_UPDATE_MAX_LENGTH: 'Alasan pembaharuan maksimal 255 karakter',
-
-    REASON_DELETE_REQUIRED: 'Alasan penghapusan harus terisi',
-    REASON_DELETE_MIN_LENGTH: 'Alasan penghapusan minimal 10 Karakter',
-    REASON_DELETE_MAX_LENGTH: 'Alasan penghapusan maksimal 255 karakter',
+  static readonly GLOBAL_FAILURE_MESSAGE = {
+    USER_NOT_FOUND: 'Id pengguna tidak ditemukan',
   };
 
   ///Success Message Authentication
@@ -138,12 +125,6 @@ export class StringResource {
       'Hanya file dengan tipe gambar JPG, PNG, dan WebP yang diperbolehkan',
     INVALID_EXTENSION:
       'Ekstensi file tidak valid. Hanya file .jpg, .jpeg, dan .png yang diperbolehkan',
-  };
-
-  static readonly FAILURE_MESSAGE_TRANSACTION = {
-    ADMIN_NOT_FOUND: 'id Admin tidak ditemukan',
-    USER_NOT_FOUND: 'id User tidak ditemukan',
-    TRASH_NOT_FOUND: 'id Sampah tidak ditemukan',
   };
 
   static readonly STATUS_TRASHITEM = {

@@ -24,10 +24,10 @@ export class JwtMiddlewareUser implements NestMiddleware {
 
     try {
       const payload = this.tokenService.verifyAccessToken(token);
+      req['user'] = payload;
       next();
-      return payload;
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
       throw new UnauthorizedException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.INVALID_OR_EXPIRED_TOKEN,
       );
