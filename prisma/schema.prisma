@@ -42,7 +42,7 @@ model Authentication {
 
 model Item {
   itemId     String       @id  @map("item_id")         // Primary key
-  item_name       String    @db.VarChar(255) @map("item_name")                                    // Nama barang
+  itemName       String    @db.VarChar(255) @map("item_name")                                    // Nama barang
   itemCode   Int?                      @map("item_code")                      // Kode barang (opsional)
   stock      Int                                                             // Jumlah stok saat ini
   createdAt  DateTime  @default(now())        @map("created_at")             // Tanggal barang dibuat
@@ -59,7 +59,7 @@ model IncomingItem {
   itemId          String                                    @map("item_id")     // Foreign key ke items
   quantity        Int                                                             // Jumlah barang masuk
   receivedBy      String    @db.VarChar(100)             @map("received_by")     // Diterima oleh siapa
-  createdAt       DateTime                               @map("created_at")     // Tanggal barang masuk
+  createdAt       DateTime  @default(now())                          @map("created_at")     // Tanggal barang masuk
 
   item            Item      @relation(fields: [itemId], references: [itemId])    // Relasi ke Item
 
@@ -94,10 +94,10 @@ model StockLog {
 
 model UsedItem {
   usedItemId  String       @id  @map("used_item_id")       // Primary key
-  itemId      String                                        @map("item_id")           // Foreign key ke item
+  itemId      String                                        @map("item_id")         // Foreign key ke item
   quantity    Int                                                                  // Jumlah barang yang digunakan
   usedBy      String    @db.VarChar(100)                @map("used_by")           // Digunakan oleh siapa
-  purpose     String    @db.Text                                                           // Keperluan penggunaan (opsional)
+  purpose     String    @db.Text                                                  // Keperluan penggunaan (opsional)
   createdAt   DateTime  @default(now())                  @map("created_at")       // Waktu digunakan
 
   item        Item      @relation(fields: [itemId], references: [itemId])        // Relasi ke item
