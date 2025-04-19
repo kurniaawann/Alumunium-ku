@@ -34,22 +34,29 @@ model Otp {
 }
 
 model Authentication {
-  accessToken String @unique @map("access_token")
+  id           String   @id @default(uuid())
+  accessToken String  @db.Text @map("access_token")
 
   @@map("authentication")
 }
 
 
 model Item {
-  itemId     String       @id  @map("item_id")         // Primary key
-  itemName       String    @db.VarChar(255) @map("item_name")                                    // Nama barang
-  itemCode   Int?                      @map("item_code")                      // Kode barang (opsional)
-  stock      Int                                                             // Jumlah stok saat ini
-  createdAt  DateTime  @default(now())        @map("created_at")             // Tanggal barang dibuat
+  itemId     String       @id  @map("item_id")
+  itemName   String       @db.VarChar(255) @map("item_name")
+  itemCode   Int?         @map("item_code")
+  stock      Int
+  createdAt  DateTime     @default(now()) @map("created_at")
+  createdBy  String      @map("created_by")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  updatedBy  String?      @map("updated_by")
+  deleteBy   String?       @map("delete_by")
+  isDelete Boolean        @default(false) @map("is_delete")
+  deleteAt DateTime?       @map("delete_at")
 
-  incomingItems IncomingItem[]                                          // Relasi ke incoming_items
-  outgoingItems OutgoingItem[]   
-  usetItem UsedItem[]                                         // Relasi ke outgoing_items
+  incomingItems IncomingItem[]
+  outgoingItems OutgoingItem[]
+  usetItem       UsedItem[]
 
   @@map("items")
 }
@@ -60,8 +67,13 @@ model IncomingItem {
   quantity        Int                                                             // Jumlah barang masuk
   receivedBy      String    @db.VarChar(100)             @map("received_by")     // Diterima oleh siapa
   createdAt       DateTime  @default(now())                          @map("created_at")     // Tanggal barang masuk
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  updatedBy  String?      @map("updated_by")
+  deleteBy   String?       @map("delete_by")
+  isDelete Boolean        @default(false) @map("is_delete")
+  deleteAt DateTime?       @map("delete_at")
 
-  item            Item      @relation(fields: [itemId], references: [itemId])    // Relasi ke Item
+  item            Item      @relation(fields: [itemId], references: [itemId], onDelete: Cascade)    // Relasi ke Item
 
   @@map("incoming_items")
 }
@@ -74,7 +86,7 @@ model OutgoingItem {
   handledBy       String @db.VarChar(100)          @map("handled_by")           // Ditangani oleh siapa
   description     String @db.Text                                                      // Keterangan tambahan (opsional)
 
-  item            Item         @relation(fields: [itemId], references: [itemId])                   // Relasi ke item
+  item            Item         @relation(fields: [itemId], references: [itemId], onDelete: Cascade)                   // Relasi ke item
 
   @@map("outgoing_items")
 }
@@ -87,7 +99,7 @@ model StockLog {
   description String    @db.Text                                                  // Deskripsi aktivitas
   createdAt  DateTime   @default(now())                 @map("created_at")         // Waktu log dibuat
 
-  user       User       @relation(fields: [userId], references: [userId])      // Relasi ke user
+  user       User       @relation(fields: [userId], references: [userId], onDelete: Cascade)      // Relasi ke user
 
   @@map("stock_logs")
 }
@@ -100,7 +112,7 @@ model UsedItem {
   purpose     String    @db.Text                                                  // Keperluan penggunaan (opsional)
   createdAt   DateTime  @default(now())                  @map("created_at")       // Waktu digunakan
 
-  item        Item      @relation(fields: [itemId], references: [itemId])        // Relasi ke item
+  item        Item      @relation(fields: [itemId], references: [itemId],onDelete: Cascade)        // Relasi ke item
 
   @@map("used_items")
 }
