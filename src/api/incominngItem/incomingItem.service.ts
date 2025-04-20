@@ -81,7 +81,6 @@ export class IncomingItemService {
           itemName: normalizedItemName,
           itemCode: request.itemCode,
           stock: request.quantity,
-          createdBy: existingUser.userName,
         },
       });
 

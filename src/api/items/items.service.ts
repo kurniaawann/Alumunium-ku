@@ -86,7 +86,6 @@ export class ItemService {
     await this.prismaService.item.update({
       where: { itemId: existingId.itemId },
       data: {
-        updatedBy: existingUser.userName,
         ...request,
       },
     });
@@ -127,7 +126,6 @@ export class ItemService {
       where: { itemId: id },
       data: {
         isDelete: true,
-        deleteBy: existingUser.userName,
         deleteAt: new Date(),
       },
     });
@@ -138,10 +136,17 @@ export class ItemService {
     };
   }
 
-  async getAllItemService(page: number, limit: number, isDeleted: boolean) {
+  async getAllItemService(
+    page: number,
+    limit: number,
+    isDeleted: boolean,
+    isUpdate: boolean,
+  ) {
     const validPageParams = Math.max(1, page);
     const validLimitParams = Math.max(1, limit);
     const skip = (validPageParams - 1) * validLimitParams;
+
+    console.log(isUpdate);
 
     const items = await this.prismaService.item.findMany({
       where: {
