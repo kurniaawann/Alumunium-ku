@@ -46,6 +46,8 @@ model Item {
   itemName   String       @db.VarChar(255) @map("item_name")
   itemCode   Int?         @map("item_code")
   stock      Int
+  height     Int?
+  width      Int?
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
   isDelete Boolean        @default(false) @map("is_delete")
@@ -64,7 +66,7 @@ model IncomingItem {
   quantity        Int                                                             // Jumlah barang masuk
   receivedBy      String    @db.VarChar(255)             @map("received_by")     // Diterima oleh siapa
   createdAt       DateTime  @default(now())                          @map("created_at")     // Tanggal barang masuk
-  updatedAt  DateTime     @updatedAt @map("updated_at")
+  updatedAt  DateTime?     @updatedAt @map("updated_at")
   isDelete Boolean        @default(false) @map("is_delete")
   deleteAt DateTime?       @map("delete_at")
 
