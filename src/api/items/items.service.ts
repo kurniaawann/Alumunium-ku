@@ -42,13 +42,13 @@ export class ItemService {
       itemId: `item-id-${uuid()}`,
       itemName: item.itemName,
       itemCode: item.itemCode,
+      width: item.width,
+      height: item.height,
       stock: item.stock,
-      createdBy: existingUser.userName,
     }));
 
     await this.prismaService.item.createMany({
       data: itemsToCreate,
-      skipDuplicates: false, // opsional
     });
 
     return {

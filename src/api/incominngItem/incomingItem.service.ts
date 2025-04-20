@@ -81,6 +81,8 @@ export class IncomingItemService {
           itemName: normalizedItemName,
           itemCode: request.itemCode,
           stock: request.quantity,
+          width: request.width,
+          height: request.height,
         },
       });
 

@@ -40,4 +40,16 @@ export class IncomingItemDto {
     message: StringResource.ERROR_MESSAGES_VALIDATE.STOCK_REQUIRED,
   })
   stock: number;
+
+  @IsOptional()
+  @IsInt({
+    message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
+  })
+  width: number;
+
+  @IsOptional()
+  @IsInt({
+    message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
+  })
+  height: number;
 }
