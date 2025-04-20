@@ -101,7 +101,7 @@ export class IncomingItemService {
           quantity: item.quantity,
           beforeStock: beforeStock,
           afterStock: newStock,
-          description: `Barang masuk oleh ${existingUser.userName} (dari IncomingItem)`,
+          description: `Barang masuk oleh dan deterima oleh ${existingUser.userName} dengan jumlah ${item.quantity}`,
         });
       } else {
         // Item belum ada, buat baru
@@ -130,7 +130,7 @@ export class IncomingItemService {
           quantity: item.quantity,
           beforeStock: 0,
           afterStock: item.quantity,
-          description: `Item baru dibuat dan barang masuk oleh ${existingUser.userName}`,
+          description: `Item baru dibuat dan barang masuk oleh ${existingUser.userName} dengan jumlah ${item.quantity}`,
         });
       }
     });
