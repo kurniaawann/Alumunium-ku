@@ -54,6 +54,7 @@ model Item {
   incomingItems IncomingItem[]
   outgoingItems OutgoingItem[]
   usetItem       UsedItem[]
+  stockLog      StockLog[]
 
   @@map("items")
 }
@@ -86,14 +87,18 @@ model OutgoingItem {
 }
 
 model StockLog {
-  logId      String       @id                           // Primary key untuk setiap log
+  logId      String       @id                           @map("log_id")
   userId     String                                             @map("user_id")      // Foreign key ke User
+  itemId       String                                     @map("item_id")           // Barang apa yang diubah
   changeType ChangeType                                         @map("change_type")  // Jenis perubahan stok: IN / OUT
   quantity   Int                                                                 // Jumlah yang berubah
+  beforeStock  Int?                                       @map("before_stock")      // Stok sebelum
+  afterStock   Int?                                       @map("after_stock")       // Stok setelah
   description String    @db.Text                                                  // Deskripsi aktivitas
   createdAt  DateTime   @default(now())                 @map("created_at")         // Waktu log dibuat
 
-  user       User       @relation(fields: [userId], references: [userId], onDelete: Cascade)      // Relasi ke user
+  user       User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  item         Item         @relation(fields: [itemId], references: [itemId], onDelete: Cascade)  
 
   @@map("stock_logs")
 }
