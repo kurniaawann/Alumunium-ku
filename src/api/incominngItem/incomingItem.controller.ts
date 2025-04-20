@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Put,
+  Query,
   Request,
 } from '@nestjs/common';
 import { IncomingItemDto } from 'src/DTO/dto.incomingItem';
@@ -44,6 +46,27 @@ export class IncomingItemController {
     const result = await this.incomingItemService.deleteIncomingItemService(
       userId,
       id,
+    );
+    return result;
+  }
+
+  @Get('all')
+  async getAllItem(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('search') name?: string,
+  ) {
+    console.log('function ini dijalankan');
+    const pageInt: number = isNaN(parseInt(page ?? '1', 10))
+      ? 1
+      : parseInt(page ?? '1', 10);
+    const limitInt: number = isNaN(parseInt(limit ?? '10', 10))
+      ? 10
+      : parseInt(limit ?? '10', 10);
+    const result = await this.incomingItemService.getAllIncomingItemService(
+      pageInt,
+      limitInt,
+      name || '',
     );
     return result;
   }

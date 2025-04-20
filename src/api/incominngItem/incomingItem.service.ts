@@ -9,6 +9,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { IncomingItemDto } from 'src/DTO/dto.incomingItem';
 import { StringResource } from 'src/StringResource/string.resource';
+import { calculateNextPage } from 'src/utils/PaginatedResponse/CalculateNextpage';
+import { calculatePreviousPage } from 'src/utils/PaginatedResponse/CalculatePreviousPage';
+import { calculateTotalPages } from 'src/utils/PaginatedResponse/CalculateTotalPages';
+import { createPaginatedResponse } from 'src/utils/PaginatedResponse/PaginatedResponse';
 import { v4 as uuid } from 'uuid';
 import { Logger } from 'winston';
 @Injectable()
@@ -268,5 +272,48 @@ export class IncomingItemService {
       statusCode: HttpStatus.OK,
       message: 'Incoming item berhasil dihapus dan stok diperbarui.',
     };
+  }
+
+  async getAllIncomingItemService(page: number, limit: number, name: string) {
+    const validPageParams = Math.max(1, page);
+    const validLimitParams = Math.max(1, limit);
+    const skip = (validPageParams - 1) * validLimitParams;
+
+    const whereCondition: any = {};
+
+    // Tambahkan filter pencarian berdasarkan itemName hanya jika name tidak kosong
+    if (name && name.trim() !== '') {
+      whereCondition.itemName = {
+        contains: name,
+        // mode: 'insensitive', // tidak case-sensitive
+      };
+    }
+
+    const totalData = await this.prismaService.incomingItem.count({
+      where: whereCondition,
+    });
+
+    const items = await this.prismaService.incomingItem.findMany({
+      where: whereCondition,
+      skip,
+      take: validLimitParams,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const totalPages = calculateTotalPages(totalData, validLimitParams);
+    const nextPage = calculateNextPage(validPageParams, totalPages);
+    const previousPage = calculatePreviousPage(validPageParams);
+
+    return createPaginatedResponse({
+      data: items,
+      totalData,
+      totalPages,
+      currentPage: validPageParams, // halaman saat ini
+      nextPage,
+      previousPage,
+      limit: validLimitParams,
+    });
   }
 }
