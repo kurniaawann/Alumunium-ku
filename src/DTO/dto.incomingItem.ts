@@ -52,4 +52,12 @@ export class IncomingItemDto {
     message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
   })
   height: number;
+
+  @IsNotEmpty({
+    message: 'Harga Barang dibutuhkan',
+  })
+  @IsInt({
+    message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
+  })
+  priceIncomingItem: number;
 }

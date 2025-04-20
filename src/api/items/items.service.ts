@@ -122,12 +122,8 @@ export class ItemService {
       );
     }
 
-    await this.prismaService.item.update({
+    await this.prismaService.item.delete({
       where: { itemId: id },
-      data: {
-        isDelete: true,
-        deleteAt: new Date(),
-      },
     });
 
     return {
@@ -136,19 +132,12 @@ export class ItemService {
     };
   }
 
-  async getAllItemService(
-    page: number,
-    limit: number,
-    isDeleted: boolean,
-    name: string,
-  ) {
+  async getAllItemService(page: number, limit: number, name: string) {
     const validPageParams = Math.max(1, page);
     const validLimitParams = Math.max(1, limit);
     const skip = (validPageParams - 1) * validLimitParams;
 
-    const whereCondition: any = {
-      isDelete: isDeleted, // Pastikan field ini sama dengan yang di database
-    };
+    const whereCondition: any = {};
 
     // Tambahkan filter pencarian berdasarkan itemName hanya jika name tidak kosong
     if (name && name.trim() !== '') {

@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseBoolPipe,
   Post,
   Put,
   Query,
@@ -45,8 +44,7 @@ export class ItemController {
   async getAllItem(
     @Query('page') page: string,
     @Query('limit') limit: string,
-    @Query('isDeleted', ParseBoolPipe) isDeleted: boolean,
-    @Query('name') name?: string,
+    @Query('search') name?: string,
   ) {
     const pageInt: number = isNaN(parseInt(page ?? '1', 10))
       ? 1
@@ -57,7 +55,6 @@ export class ItemController {
     const result = await this.itemService.getAllItemService(
       pageInt,
       limitInt,
-      isDeleted,
       name || '',
     );
     return result;
