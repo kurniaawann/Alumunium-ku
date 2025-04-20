@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpStatus,
   Inject,
   Injectable,
@@ -100,5 +101,80 @@ export class IncomingItemService {
         message: 'Item baru berhasil dibuat dan barang masuk dicatat.',
       };
     }
+  }
+
+  async editIncomingItemService(
+    request: IncomingItemDto,
+    userId: string,
+    id: string,
+  ) {
+    const existingUser = await this.prismaService.user.findUnique({
+      where: {
+        userId: userId,
+      },
+      select: {
+        userName: true,
+      },
+    });
+
+    const existingIncomingItem =
+      await this.prismaService.incomingItem.findUnique({
+        where: {
+          incomingItemsId: id,
+        },
+        include: {
+          item: true, // penting agar bisa akses item.stock
+        },
+      });
+
+    if (!existingUser) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
+    }
+
+    if (!existingIncomingItem) {
+      throw new NotFoundException('Id incoming item tidak ditemukan.');
+    }
+
+    const oldQuantity = existingIncomingItem.quantity;
+    const newQuantity = request.quantity;
+    const stockCorrection = newQuantity - oldQuantity;
+
+    const currentStock = existingIncomingItem.item.stock;
+    const updatedStock = currentStock + stockCorrection;
+
+    if (updatedStock < 0) {
+      throw new BadRequestException('Stok tidak boleh kurang dari 0.');
+    }
+
+    // Update master: Item
+    await this.prismaService.item.update({
+      where: { itemId: existingIncomingItem.itemId },
+      data: {
+        itemName: request.itemName,
+        itemCode: request.itemCode,
+        stock: {
+          increment: stockCorrection,
+        },
+        width: request.width,
+        height: request.height,
+      },
+    });
+
+    // Update quantity incoming item
+    await this.prismaService.incomingItem.update({
+      where: {
+        incomingItemsId: id,
+      },
+      data: {
+        quantity: newQuantity,
+      },
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Incoming item berhasil diupdate.',
+    };
   }
 }
