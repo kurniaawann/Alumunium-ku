@@ -1,6 +1,7 @@
 import {
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   MaxLength,
   MinLength,
@@ -34,14 +35,20 @@ export class ItemDto {
   stock: number;
 
   @IsOptional()
-  @IsInt({
-    message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
-  })
+  @IsNumber(
+    {},
+    {
+      message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
+    },
+  )
   width: number;
 
   @IsOptional()
-  @IsInt({
-    message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
-  })
+  @IsNumber(
+    {},
+    {
+      message: StringResource.ERROR_MESSAGES_VALIDATE.NUMBER,
+    },
+  )
   height: number;
 }
