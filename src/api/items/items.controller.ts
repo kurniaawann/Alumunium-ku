@@ -46,7 +46,7 @@ export class ItemController {
     @Query('page') page: string,
     @Query('limit') limit: string,
     @Query('isDeleted', ParseBoolPipe) isDeleted: boolean,
-    @Query('isUpdate', ParseBoolPipe) isUpdate: boolean,
+    @Query('name') name?: string,
   ) {
     const pageInt: number = isNaN(parseInt(page ?? '1', 10))
       ? 1
@@ -58,7 +58,7 @@ export class ItemController {
       pageInt,
       limitInt,
       isDeleted,
-      isUpdate,
+      name || '',
     );
     return result;
   }

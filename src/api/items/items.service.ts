@@ -140,32 +140,44 @@ export class ItemService {
     page: number,
     limit: number,
     isDeleted: boolean,
-    isUpdate: boolean,
+    name: string,
   ) {
     const validPageParams = Math.max(1, page);
     const validLimitParams = Math.max(1, limit);
     const skip = (validPageParams - 1) * validLimitParams;
 
-    console.log(isUpdate);
+    const whereCondition: any = {
+      isDelete: isDeleted, // Pastikan field ini sama dengan yang di database
+    };
+
+    // Tambahkan filter pencarian berdasarkan itemName hanya jika name tidak kosong
+    if (name && name.trim() !== '') {
+      whereCondition.itemName = {
+        contains: name,
+        // mode: 'insensitive', // tidak case-sensitive
+      };
+    }
+
+    const totalData = await this.prismaService.item.count({
+      where: whereCondition,
+    });
 
     const items = await this.prismaService.item.findMany({
-      where: {
-        isDelete: isDeleted, // hanya ambil item yang belum dihapus
-      },
+      where: whereCondition,
       skip,
       take: validLimitParams,
       orderBy: {
-        createdAt: 'desc', // opsional: urutkan dari yang terbaru
+        createdAt: 'desc',
       },
     });
 
-    const totalPages = calculateTotalPages(items.length, validLimitParams);
+    const totalPages = calculateTotalPages(totalData, validLimitParams);
     const nextPage = calculateNextPage(validPageParams, totalPages);
     const previousPage = calculatePreviousPage(validPageParams);
 
     return createPaginatedResponse({
       data: items,
-      totalData: items.length,
+      totalData,
       previousPage,
       nextPage,
       totalPages,
