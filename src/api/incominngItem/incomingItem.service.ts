@@ -20,6 +20,7 @@ export class IncomingItemService {
   async createIncomingItemService(request: IncomingItemDto, userId: string) {
     const generateItemId = `item-id-${uuid()}`;
     const generateIncomingItemId = `incoming-item-id-${uuid()}`;
+    const generateStockLogId = `stock-log-id-${uuid()}`;
 
     // Normalize nama barang
     const normalizedItemName = request.itemName
@@ -28,12 +29,8 @@ export class IncomingItemService {
       .replace(/\s+/g, ' ');
 
     const existingUser = await this.prismaService.user.findUnique({
-      where: {
-        userId: userId,
-      },
-      select: {
-        userName: true,
-      },
+      where: { userId },
+      select: { userName: true },
     });
 
     if (!existingUser) {
@@ -42,17 +39,15 @@ export class IncomingItemService {
       );
     }
 
-    // Cek apakah item sudah ada dengan nama yang sudah dinormalisasi
     const existingItem = await this.prismaService.item.findFirst({
-      where: {
-        itemName: {
-          equals: normalizedItemName,
-        },
-      },
+      where: { itemName: { equals: normalizedItemName } },
     });
 
     if (existingItem) {
-      // Jika item sudah ada, tinggal update stock dan buat incoming
+      // Stok sebelum
+      const beforeStock = existingItem.stock;
+
+      // Create incoming item
       await this.prismaService.incomingItem.create({
         data: {
           priceIncomingItem: request.priceIncomingItem,
@@ -63,10 +58,25 @@ export class IncomingItemService {
         },
       });
 
-      await this.prismaService.item.update({
+      // Update stok item
+      const updatedItem = await this.prismaService.item.update({
         where: { itemId: existingItem.itemId },
         data: {
           stock: { increment: request.quantity },
+        },
+      });
+
+      // Buat StockLog
+      await this.prismaService.stockLog.create({
+        data: {
+          logId: generateStockLogId,
+          userId: userId,
+          itemId: existingItem.itemId,
+          changeType: 'IN',
+          quantity: request.quantity,
+          beforeStock: beforeStock,
+          afterStock: updatedItem.stock,
+          description: `Barang masuk oleh ${existingUser.userName} (dari IncomingItem)`,
         },
       });
 
@@ -76,7 +86,7 @@ export class IncomingItemService {
           'Barang masuk ditambahkan ke item yang sudah ada, stok diperbarui.',
       };
     } else {
-      // Buat item baru dengan nama yang sudah dinormalisasi
+      // Buat item baru
       await this.prismaService.item.create({
         data: {
           itemId: generateItemId,
@@ -88,6 +98,7 @@ export class IncomingItemService {
         },
       });
 
+      // Create incoming item
       await this.prismaService.incomingItem.create({
         data: {
           priceIncomingItem: request.priceIncomingItem,
@@ -95,6 +106,20 @@ export class IncomingItemService {
           itemId: generateItemId,
           quantity: request.quantity,
           receivedBy: existingUser.userName,
+        },
+      });
+
+      // Buat StockLog (stok sebelumnya = 0)
+      await this.prismaService.stockLog.create({
+        data: {
+          logId: generateStockLogId,
+          userId: userId,
+          itemId: generateItemId,
+          changeType: 'IN',
+          quantity: request.quantity,
+          beforeStock: 0,
+          afterStock: request.quantity,
+          description: `Item baru dibuat dan barang masuk oleh ${existingUser.userName}`,
         },
       });
 

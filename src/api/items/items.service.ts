@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ChangeType } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ItemDto } from 'src/DTO/dto.item';
@@ -49,6 +50,21 @@ export class ItemService {
 
     await this.prismaService.item.createMany({
       data: itemsToCreate,
+    });
+
+    const stockLogsToCreate = itemsToCreate.map((item) => ({
+      logId: `stock-log-id-${uuid()}`,
+      userId: userId,
+      itemId: item.itemId,
+      beforeStock: 0,
+      afterStock: item.stock,
+      changeType: ChangeType.IN,
+      quantity: item.stock,
+      description: `Item '${item.itemName}' dibuat oleh ${existingUser.userName}`,
+    }));
+
+    await this.prismaService.stockLog.createMany({
+      data: stockLogsToCreate,
     });
 
     return {
