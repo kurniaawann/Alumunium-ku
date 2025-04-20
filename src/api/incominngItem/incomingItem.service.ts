@@ -204,4 +204,69 @@ export class IncomingItemService {
       message: 'Incoming item berhasil diupdate.',
     };
   }
+
+  async deleteIncomingItemService(userId: string, id: string) {
+    // Cek apakah user ada
+    const existingUser = await this.prismaService.user.findUnique({
+      where: {
+        userId: userId,
+      },
+      select: {
+        userName: true,
+      },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
+    }
+
+    // Cek apakah incoming item ada
+    const existingIncomingItem =
+      await this.prismaService.incomingItem.findUnique({
+        where: {
+          incomingItemsId: id,
+        },
+        include: {
+          item: true, // agar bisa akses stok saat ini
+        },
+      });
+
+    if (!existingIncomingItem) {
+      throw new NotFoundException('Incoming item tidak ditemukan.');
+    }
+
+    const quantityToRemove = existingIncomingItem.quantity;
+    const currentStock = existingIncomingItem.item.stock;
+    const updatedStock = currentStock - quantityToRemove;
+
+    if (updatedStock < 0) {
+      throw new BadRequestException(
+        'Tidak dapat menghapus karena stok akan menjadi negatif.',
+      );
+    }
+
+    // Update stok di tabel item
+    await this.prismaService.item.update({
+      where: {
+        itemId: existingIncomingItem.itemId,
+      },
+      data: {
+        stock: updatedStock,
+      },
+    });
+
+    // Hapus incoming item
+    await this.prismaService.incomingItem.delete({
+      where: {
+        incomingItemsId: id,
+      },
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Incoming item berhasil dihapus dan stok diperbarui.',
+    };
+  }
 }
