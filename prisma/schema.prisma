@@ -50,8 +50,6 @@ model Item {
   width      Float?       @db.Double
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
-  isDelete Boolean        @default(false) @map("is_delete")
-  deleteAt DateTime?       @map("delete_at")
 
   incomingItems IncomingItem[]
   outgoingItems OutgoingItem[]
@@ -65,10 +63,9 @@ model IncomingItem {
   itemId          String                                    @map("item_id")     // Foreign key ke items
   quantity        Int                                                             // Jumlah barang masuk
   receivedBy      String    @db.VarChar(255)             @map("received_by")     // Diterima oleh siapa
+  priceIncomingItem Int
   createdAt       DateTime  @default(now())                          @map("created_at")     // Tanggal barang masuk
-  updatedAt  DateTime?     @updatedAt @map("updated_at")
-  isDelete Boolean        @default(false) @map("is_delete")
-  deleteAt DateTime?       @map("delete_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
 
   item            Item      @relation(fields: [itemId], references: [itemId], onDelete: Cascade)    // Relasi ke Item
 
