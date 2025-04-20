@@ -47,10 +47,7 @@ model Item {
   itemCode   Int?         @map("item_code")
   stock      Int
   createdAt  DateTime     @default(now()) @map("created_at")
-  createdBy  String      @map("created_by")
   updatedAt  DateTime     @updatedAt @map("updated_at")
-  updatedBy  String?      @map("updated_by")
-  deleteBy   String?       @map("delete_by")
   isDelete Boolean        @default(false) @map("is_delete")
   deleteAt DateTime?       @map("delete_at")
 
@@ -65,11 +62,9 @@ model IncomingItem {
   incomingItemsId String      @id  @map("incoming_items_id") 
   itemId          String                                    @map("item_id")     // Foreign key ke items
   quantity        Int                                                             // Jumlah barang masuk
-  receivedBy      String    @db.VarChar(100)             @map("received_by")     // Diterima oleh siapa
+  receivedBy      String    @db.VarChar(255)             @map("received_by")     // Diterima oleh siapa
   createdAt       DateTime  @default(now())                          @map("created_at")     // Tanggal barang masuk
   updatedAt  DateTime     @updatedAt @map("updated_at")
-  updatedBy  String?      @map("updated_by")
-  deleteBy   String?       @map("delete_by")
   isDelete Boolean        @default(false) @map("is_delete")
   deleteAt DateTime?       @map("delete_at")
 
