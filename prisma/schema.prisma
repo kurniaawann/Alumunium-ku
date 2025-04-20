@@ -8,12 +8,12 @@ datasource db {
 }
 
 model User {
-  userId     String       @id  @map("user_id")         // Primary key
+  userId        String       @id  @map("user_id")         // Primary key
   userName      String    @db.VarChar(255) @map("user_name")
   noHandphone   String   @unique @db.VarChar(15) @map("no_handphone")                                       // Nama user
   email         String   @unique @db.VarChar(255)                                                         // Email user
-  password   String                                                          // Password user (hash)
-  createdAt  DateTime  @default(now())        @map("created_at")
+  password      String                                                          // Password user (hash)
+  createdAt     DateTime  @default(now())        @map("created_at")
   isVerified    Boolean  @default(false) @map("is_verified")            // Tanggal pembuatan akun
 
   otp          Otp []      // Relasi ke Otp
@@ -46,8 +46,8 @@ model Item {
   itemName   String       @db.VarChar(255) @map("item_name")
   itemCode   Int?         @map("item_code")
   stock      Int
-  height     Int?
-  width      Int?
+  height     Float?       @db.Double
+  width      Float?       @db.Double
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
   isDelete Boolean        @default(false) @map("is_delete")
