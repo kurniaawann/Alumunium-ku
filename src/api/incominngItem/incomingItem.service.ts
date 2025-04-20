@@ -55,6 +55,7 @@ export class IncomingItemService {
       // Jika item sudah ada, tinggal update stock dan buat incoming
       await this.prismaService.incomingItem.create({
         data: {
+          priceIncomingItem: request.priceIncomingItem,
           incomingItemsId: generateIncomingItemId,
           itemId: existingItem.itemId,
           quantity: request.quantity,
@@ -89,6 +90,7 @@ export class IncomingItemService {
 
       await this.prismaService.incomingItem.create({
         data: {
+          priceIncomingItem: request.priceIncomingItem,
           incomingItemsId: generateIncomingItemId,
           itemId: generateItemId,
           quantity: request.quantity,
