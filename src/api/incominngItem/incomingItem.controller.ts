@@ -16,7 +16,10 @@ import { IncomingItemService } from './incomingItem.service';
 export class IncomingItemController {
   constructor(private incomingItemService: IncomingItemService) {}
   @Post('')
-  async createIncomingItem(@Body() request: IncomingItemDto, @Request() req) {
+  async createIncomingItem(
+    @Body('incomingItem') request: IncomingItemDto[],
+    @Request() req,
+  ) {
     const userId: string = req.user.user_id;
     const result = await this.incomingItemService.createIncomingItemService(
       request,
