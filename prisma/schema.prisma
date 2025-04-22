@@ -74,7 +74,7 @@ model IncomingItem {
 }
 
 model OutgoingItem {
-  incomingItemsId String    @id                      @map("incoming_items_id")     // Primary key (relasi langsung)
+  outgoingItemsId String    @id                      @map("outgoing_items_id")     // Primary key (relasi langsung)
   itemId          String                              @map("item_id")               // Foreign key ke item
   quantity        Int                                                             // Jumlah barang keluar
   sentTo          String @db.VarChar(100)          @map("sent_to")              // Barang dikirim ke mana
