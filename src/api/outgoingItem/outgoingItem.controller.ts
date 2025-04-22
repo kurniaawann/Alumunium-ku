@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put } from '@nestjs/common';
 import { OutgoingItemDto } from 'src/DTO/dto.outgoingItem';
 import { OutgoingItemService } from './outgoingItem.service';
 
@@ -17,14 +17,15 @@ export class OutgoingItemController {
     );
     return result;
   }
-  @Post('/:id')
+
+  @Put('/:id')
   async editOutgoingItem(
     @Body() request: OutgoingItemDto,
-    @Param('id') itemId: string,
+    @Param('id') outgoingItem: string,
   ) {
-    const result = await this.outgoingItemService.createOutgoingItemService(
+    const result = await this.outgoingItemService.editOutgoingItemService(
       request,
-      itemId,
+      outgoingItem,
     );
     return result;
   }

@@ -43,7 +43,7 @@ export class OutgoingItemService {
 
     await this.prismaService.outgoingItem.create({
       data: {
-        outgoingItemsId: `item-id-${uuid()}`,
+        outgoingItemsId: `outgoing-item-id-${uuid()}`,
         itemId: itemId,
         ...request,
       },
@@ -55,10 +55,13 @@ export class OutgoingItemService {
     };
   }
 
-  async editOutgoingItemService(request: OutgoingItemDto, id: string) {
+  async editOutgoingItemService(
+    request: OutgoingItemDto,
+    outgoingItemId: string,
+  ) {
     const existingOutgoingItem =
       await this.prismaService.outgoingItem.findUnique({
-        where: { outgoingItemsId: id },
+        where: { outgoingItemsId: outgoingItemId },
       });
 
     if (!existingOutgoingItem) {
@@ -92,7 +95,7 @@ export class OutgoingItemService {
 
     // Update data outgoingItem
     await this.prismaService.outgoingItem.update({
-      where: { outgoingItemsId: id },
+      where: { outgoingItemsId: outgoingItemId },
       data: {
         ...request,
       },
@@ -100,7 +103,7 @@ export class OutgoingItemService {
 
     return {
       statusCode: HttpStatus.OK,
-      message: 'Item berhasil diperbarui.',
+      message: 'Item keluar berhasil diperbarui.',
     };
   }
 }
