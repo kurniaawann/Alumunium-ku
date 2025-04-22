@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Post, Put } from '@nestjs/common';
 import { OutgoingItemDto } from 'src/DTO/dto.outgoingItem';
 import { OutgoingItemService } from './outgoingItem.service';
 
@@ -27,6 +27,12 @@ export class OutgoingItemController {
       request,
       outgoingItem,
     );
+    return result;
+  }
+
+  @Delete('/:id')
+  async deleteOutgoingItem(@Param('id') id: string) {
+    const result = await this.outgoingItemService.deleteOutgoingItemService(id);
     return result;
   }
 }

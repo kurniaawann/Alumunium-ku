@@ -106,4 +106,41 @@ export class OutgoingItemService {
       message: 'Item keluar berhasil diperbarui.',
     };
   }
+
+  async deleteOutgoingItemService(outgoingItemId: string) {
+    const existingOutgoingItem =
+      await this.prismaService.outgoingItem.findUnique({
+        where: { outgoingItemsId: outgoingItemId },
+      });
+
+    if (!existingOutgoingItem) {
+      throw new NotFoundException('Data item keluar tidak ditemukan.');
+    }
+
+    const item = await this.prismaService.item.findUnique({
+      where: { itemId: existingOutgoingItem.itemId },
+    });
+
+    if (!item) {
+      throw new NotFoundException('Item tidak ditemukan.');
+    }
+
+    // Hitung stok yang tersedia setelah mengembalikan quantity lama
+    const restoredStock = item.stock + existingOutgoingItem.quantity;
+
+    await this.prismaService.item.update({
+      where: { itemId: existingOutgoingItem.itemId },
+      data: {
+        stock: restoredStock,
+      },
+    });
+
+    await this.prismaService.outgoingItem.delete({
+      where: { outgoingItemsId: outgoingItemId },
+    });
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Item keluar berhasil dihapus.',
+    };
+  }
 }
