@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpStatus,
   Inject,
   Injectable,
@@ -17,14 +18,6 @@ export class OutgoingItemService {
   ) {}
 
   async createOutgoingItemService(request: OutgoingItemDto, itemId: string) {
-    await this.prismaService.outgoingItem.create({
-      data: {
-        outgoingItemsId: `item-id-${uuid()}`,
-        itemId: itemId,
-        ...request,
-      },
-    });
-
     const existingItem = await this.prismaService.item.findUnique({
       where: {
         itemId: itemId,
@@ -48,9 +41,66 @@ export class OutgoingItemService {
       },
     });
 
+    await this.prismaService.outgoingItem.create({
+      data: {
+        outgoingItemsId: `item-id-${uuid()}`,
+        itemId: itemId,
+        ...request,
+      },
+    });
+
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Item berhasil dikirim.',
+    };
+  }
+
+  async editOutgoingItemService(request: OutgoingItemDto, id: string) {
+    const existingOutgoingItem =
+      await this.prismaService.outgoingItem.findUnique({
+        where: { outgoingItemsId: id },
+      });
+
+    if (!existingOutgoingItem) {
+      throw new NotFoundException('Data item keluar tidak ditemukan.');
+    }
+
+    const item = await this.prismaService.item.findUnique({
+      where: { itemId: existingOutgoingItem.itemId },
+    });
+
+    if (!item) {
+      throw new NotFoundException('Item tidak ditemukan.');
+    }
+
+    // Hitung stok yang tersedia setelah mengembalikan quantity lama
+    const restoredStock = item.stock + existingOutgoingItem.quantity;
+
+    if (restoredStock < request.quantity) {
+      throw new BadRequestException(
+        'Stok tidak mencukupi untuk jumlah yang diperbarui.',
+      );
+    }
+
+    // Update stok dengan quantity baru
+    await this.prismaService.item.update({
+      where: { itemId: existingOutgoingItem.itemId },
+      data: {
+        stock: restoredStock - request.quantity,
+      },
+    });
+
+    // Update data outgoingItem
+    await this.prismaService.outgoingItem.update({
+      where: { outgoingItemsId: id },
+      data: {
+        ...request,
+      },
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Item berhasil diperbarui.',
     };
   }
 }

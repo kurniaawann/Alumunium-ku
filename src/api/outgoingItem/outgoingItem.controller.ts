@@ -17,4 +17,15 @@ export class OutgoingItemController {
     );
     return result;
   }
+  @Post('/:id')
+  async editOutgoingItem(
+    @Body() request: OutgoingItemDto,
+    @Param('id') itemId: string,
+  ) {
+    const result = await this.outgoingItemService.createOutgoingItemService(
+      request,
+      itemId,
+    );
+    return result;
+  }
 }
