@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { OutgoingItemDto } from 'src/DTO/dto.outgoingItem';
 import { OutgoingItemService } from './outgoingItem.service';
 
@@ -33,6 +42,26 @@ export class OutgoingItemController {
   @Delete('/:id')
   async deleteOutgoingItem(@Param('id') id: string) {
     const result = await this.outgoingItemService.deleteOutgoingItemService(id);
+    return result;
+  }
+
+  @Get('all')
+  async getAllOutgoingItem(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('search') name?: string,
+  ) {
+    const pageInt: number = isNaN(parseInt(page ?? '1', 10))
+      ? 1
+      : parseInt(page ?? '1', 10);
+    const limitInt: number = isNaN(parseInt(limit ?? '10', 10))
+      ? 10
+      : parseInt(limit ?? '10', 10);
+    const result = await this.outgoingItemService.getAllOutgoingItemService(
+      pageInt,
+      limitInt,
+      name || '',
+    );
     return result;
   }
 }
