@@ -236,6 +236,19 @@ export class IncomingItemService {
       },
     });
 
+    await this.prismaService.stockLog.create({
+      data: {
+        logId: `log-id-${uuid()}`,
+        userId,
+        itemId: existingIncomingItem.itemId,
+        changeType: 'IN_EDIT',
+        quantity: stockCorrection,
+        beforeStock: currentStock,
+        afterStock: updatedStock,
+        description: `Edit data item barang ${existingIncomingItem.item.itemName}, perubahan jumlah: ${oldQuantity} → ${newQuantity}`,
+      },
+    });
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Incoming item berhasil diupdate.',
@@ -298,6 +311,19 @@ export class IncomingItemService {
     await this.prismaService.incomingItem.delete({
       where: {
         incomingItemsId: id,
+      },
+    });
+
+    await this.prismaService.stockLog.create({
+      data: {
+        logId: `log-id-${uuid()}`,
+        userId,
+        itemId: existingIncomingItem.itemId,
+        changeType: 'IN_DELETE',
+        quantity: -quantityToRemove, // negatif karena stok berkurang
+        beforeStock: currentStock,
+        afterStock: updatedStock,
+        description: `Menghapus baarang yang datang ${existingIncomingItem.item.itemName} dengan jumlah ${quantityToRemove}`,
       },
     });
 

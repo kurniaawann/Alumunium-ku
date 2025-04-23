@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  Request,
 } from '@nestjs/common';
 import { OutgoingItemDto } from 'src/DTO/dto.outgoingItem';
 import { OutgoingItemService } from './outgoingItem.service';
@@ -19,10 +20,13 @@ export class OutgoingItemController {
   async createOutgoingItem(
     @Body() request: OutgoingItemDto,
     @Param('id') itemId: string,
+    @Request() req,
   ) {
+    const userId: string = req.user.user_id;
     const result = await this.outgoingItemService.createOutgoingItemService(
       request,
       itemId,
+      userId,
     );
     return result;
   }
@@ -31,17 +35,24 @@ export class OutgoingItemController {
   async editOutgoingItem(
     @Body() request: OutgoingItemDto,
     @Param('id') outgoingItem: string,
+    @Request() req,
   ) {
+    const userId: string = req.user.user_id;
     const result = await this.outgoingItemService.editOutgoingItemService(
       request,
       outgoingItem,
+      userId,
     );
     return result;
   }
 
   @Delete('/:id')
-  async deleteOutgoingItem(@Param('id') id: string) {
-    const result = await this.outgoingItemService.deleteOutgoingItemService(id);
+  async deleteOutgoingItem(@Param('id') id: string, @Request() req) {
+    const userId: string = req.user.user_id;
+    const result = await this.outgoingItemService.deleteOutgoingItemService(
+      id,
+      userId,
+    );
     return result;
   }
 

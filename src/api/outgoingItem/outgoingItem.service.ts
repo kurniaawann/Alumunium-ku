@@ -8,6 +8,7 @@ import {
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { OutgoingItemDto } from 'src/DTO/dto.outgoingItem';
+import { StringResource } from 'src/StringResource/string.resource';
 import { calculateNextPage } from 'src/utils/PaginatedResponse/CalculateNextpage';
 import { calculatePreviousPage } from 'src/utils/PaginatedResponse/CalculatePreviousPage';
 import { calculateTotalPages } from 'src/utils/PaginatedResponse/CalculateTotalPages';
@@ -21,7 +22,11 @@ export class OutgoingItemService {
     private prismaService: PrismaService,
   ) {}
 
-  async createOutgoingItemService(request: OutgoingItemDto, itemId: string) {
+  async createOutgoingItemService(
+    request: OutgoingItemDto,
+    itemId: string,
+    userId: string,
+  ) {
     const existingItem = await this.prismaService.item.findUnique({
       where: {
         itemId: itemId,
@@ -34,6 +39,12 @@ export class OutgoingItemService {
 
     if (existingItem.stock < request.quantity) {
       throw new NotFoundException('Stok tidak mencukupi.');
+    }
+
+    if (!userId) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
     }
 
     await this.prismaService.item.update({
@@ -53,6 +64,19 @@ export class OutgoingItemService {
       },
     });
 
+    await this.prismaService.stockLog.create({
+      data: {
+        logId: `log-id-${uuid()}`,
+        userId,
+        itemId,
+        changeType: 'OUT',
+        quantity: request.quantity,
+        beforeStock: existingItem.stock,
+        afterStock: existingItem.stock - request.quantity,
+        description: `Barang yang keluar ${existingItem.itemName} dengan jumlah ${request.quantity}`,
+      },
+    });
+
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Item berhasil dikirim.',
@@ -62,6 +86,7 @@ export class OutgoingItemService {
   async editOutgoingItemService(
     request: OutgoingItemDto,
     outgoingItemId: string,
+    userId: string,
   ) {
     const existingOutgoingItem =
       await this.prismaService.outgoingItem.findUnique({
@@ -70,6 +95,12 @@ export class OutgoingItemService {
 
     if (!existingOutgoingItem) {
       throw new NotFoundException('Data item keluar tidak ditemukan.');
+    }
+
+    if (!userId) {
+      throw new NotFoundException(
+        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+      );
     }
 
     const item = await this.prismaService.item.findUnique({
@@ -82,6 +113,7 @@ export class OutgoingItemService {
 
     // Hitung stok yang tersedia setelah mengembalikan quantity lama
     const restoredStock = item.stock + existingOutgoingItem.quantity;
+    const updatedStock = restoredStock - request.quantity;
 
     if (restoredStock < request.quantity) {
       throw new BadRequestException(
@@ -105,13 +137,26 @@ export class OutgoingItemService {
       },
     });
 
+    await this.prismaService.stockLog.create({
+      data: {
+        logId: `log-id-${uuid()}`,
+        userId: userId,
+        itemId: existingOutgoingItem.itemId,
+        changeType: 'OUT_EDIT',
+        quantity: request.quantity,
+        beforeStock: restoredStock,
+        afterStock: updatedStock,
+        description: `Perubahan item keluar untuk ${item.itemName}, jumlah diubah dari ${existingOutgoingItem.quantity} menjadi ${request.quantity}`,
+      },
+    });
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Item keluar berhasil diperbarui.',
     };
   }
 
-  async deleteOutgoingItemService(outgoingItemId: string) {
+  async deleteOutgoingItemService(outgoingItemId: string, userId: string) {
     const existingOutgoingItem =
       await this.prismaService.outgoingItem.findUnique({
         where: { outgoingItemsId: outgoingItemId },
@@ -141,6 +186,19 @@ export class OutgoingItemService {
 
     await this.prismaService.outgoingItem.delete({
       where: { outgoingItemsId: outgoingItemId },
+    });
+
+    await this.prismaService.stockLog.create({
+      data: {
+        logId: `log-id-${uuid()}`,
+        userId,
+        itemId: item.itemId,
+        changeType: 'OUT_DELETE',
+        quantity: existingOutgoingItem.quantity,
+        beforeStock: item.stock,
+        afterStock: restoredStock,
+        description: `Penghapusan item keluar ${item.itemName}, stok dikembalikan sebanyak ${existingOutgoingItem.quantity}`,
+      },
     });
     return {
       statusCode: HttpStatus.OK,
