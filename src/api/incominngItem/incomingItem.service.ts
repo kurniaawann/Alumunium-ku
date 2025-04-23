@@ -375,4 +375,21 @@ export class IncomingItemService {
       limit: validLimitParams,
     });
   }
+
+  async getDetailIncomingItemService(incomingItemId: string) {
+    const result = await this.prismaService.incomingItem.findUnique({
+      where: {
+        incomingItemsId: incomingItemId,
+      },
+      include: {
+        item: true, // agar bisa akses stok saat ini
+      },
+    });
+
+    if (!result) {
+      throw new NotFoundException('Data item masuk tidak ditemukan.');
+    }
+
+    return result;
+  }
 }

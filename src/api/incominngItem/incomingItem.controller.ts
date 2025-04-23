@@ -59,7 +59,6 @@ export class IncomingItemController {
     @Query('limit') limit: string,
     @Query('search') name?: string,
   ) {
-    console.log('function ini dijalankan');
     const pageInt: number = isNaN(parseInt(page ?? '1', 10))
       ? 1
       : parseInt(page ?? '1', 10);
@@ -72,5 +71,11 @@ export class IncomingItemController {
       name || '',
     );
     return result;
+  }
+  @Get('/:id/detail/item')
+  async getDetailIncomingItem(@Param('id') incomingItemId: string) {
+    return await this.incomingItemService.getDetailIncomingItemService(
+      incomingItemId,
+    );
   }
 }

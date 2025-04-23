@@ -248,4 +248,19 @@ export class OutgoingItemService {
       limit: validLimitParams,
     });
   }
+
+  async getDetailOutgoingItemService(outgoingItemId: string) {
+    const result = await this.prismaService.outgoingItem.findUnique({
+      where: { outgoingItemsId: outgoingItemId },
+      include: {
+        item: true,
+      },
+    });
+
+    if (!result) {
+      throw new NotFoundException('Data item keluar tidak ditemukan.');
+    }
+
+    return result;
+  }
 }

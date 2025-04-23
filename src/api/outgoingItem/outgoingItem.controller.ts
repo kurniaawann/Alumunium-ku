@@ -75,4 +75,11 @@ export class OutgoingItemController {
     );
     return result;
   }
+
+  @Get('/:id/detail/item')
+  async getDetailIncomingItem(@Param('id') outgoingItemId: string) {
+    return await this.outgoingItemService.getDetailOutgoingItemService(
+      outgoingItemId,
+    );
+  }
 }
