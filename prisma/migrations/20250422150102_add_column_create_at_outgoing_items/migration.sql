@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `outgoing_items` ADD COLUMN `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
