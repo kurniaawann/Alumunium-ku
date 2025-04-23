@@ -121,4 +121,8 @@ enum ChangeType {
   IN
   OUT
   USED
+  OUT_EDIT
+  OUT_DELETE
+  IN_EDIT
+  IN_DELETE
 }
