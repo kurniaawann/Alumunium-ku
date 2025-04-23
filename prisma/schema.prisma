@@ -79,7 +79,8 @@ model OutgoingItem {
   quantity        Int                                                             // Jumlah barang keluar
   sentTo          String @db.VarChar(100)          @map("sent_to")              // Barang dikirim ke mana
   handledBy       String @db.VarChar(100)          @map("handled_by")           // Ditangani oleh siapa
-  description     String @db.Text                                                      // Keterangan tambahan (opsional)
+  description     String @db.Text                                    
+  createdAt       DateTime  @default(now())                          @map("created_at")                  // Keterangan tambahan (opsional)
 
   item            Item         @relation(fields: [itemId], references: [itemId], onDelete: Cascade)                   // Relasi ke item
 
