@@ -90,7 +90,7 @@ export class ItemService {
 
     if (!existingId) {
       throw new NotFoundException(
-        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+        StringResource.GLOBAL_FAILURE_MESSAGE.ITEM_NOT_FOUND,
       );
     }
 
@@ -128,7 +128,7 @@ export class ItemService {
 
     if (!existingId) {
       throw new NotFoundException(
-        StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
+        StringResource.GLOBAL_FAILURE_MESSAGE.ITEM_NOT_FOUND,
       );
     }
 

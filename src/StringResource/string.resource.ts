@@ -70,6 +70,7 @@ export class StringResource {
 
   static readonly GLOBAL_FAILURE_MESSAGE = {
     USER_NOT_FOUND: 'Id pengguna tidak ditemukan',
+    ITEM_NOT_FOUND: 'Id item tidak ditemukan',
   };
 
   ///Success Message Authentication

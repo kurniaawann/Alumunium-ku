@@ -1,7 +1,13 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { JwtAuthModule } from 'src/jwt/jwt.module';
 import { TokenService } from 'src/jwt/jwt.service';
 import { JwtMiddlewareAdmin } from 'src/middleware/jwt.middlewareAdmin';
+import { JwtMiddlewareUser } from 'src/middleware/jwt.middlewareUser';
 import { OutgoingItemController } from './outgoingItem.controller';
 import { OutgoingItemService } from './outgoingItem.service';
 
@@ -12,7 +18,19 @@ import { OutgoingItemService } from './outgoingItem.service';
 })
 export class OutgoingItemModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddlewareAdmin).forRoutes('/outgoing-item*');
-    consumer.apply(JwtMiddlewareAdmin).forRoutes('/outgoing-item/*');
+    consumer
+      .apply(JwtMiddlewareUser)
+      .forRoutes(
+        { path: 'outgoing-item/all', method: RequestMethod.GET },
+        { path: 'outgoing-item//:id/detail/item', method: RequestMethod.GET },
+      );
+
+    consumer
+      .apply(JwtMiddlewareAdmin)
+      .forRoutes(
+        { path: 'outgoing-item', method: RequestMethod.POST },
+        { path: 'outgoing-item/:id', method: RequestMethod.PUT },
+        { path: 'outgoing-item/:id', method: RequestMethod.DELETE },
+      );
   }
 }
