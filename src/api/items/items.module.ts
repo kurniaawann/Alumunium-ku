@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { JwtAuthModule } from 'src/jwt/jwt.module';
 import { TokenService } from 'src/jwt/jwt.service';
-import { JwtMiddlewareUser } from 'src/middleware/jwt.middleware';
+import { JwtMiddlewareAdmin } from 'src/middleware/jwt.middlewareAdmin';
 import { ItemController } from './items.controller';
 import { ItemService } from './items.service';
 
@@ -12,7 +12,7 @@ import { ItemService } from './items.service';
 })
 export class ItemModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddlewareUser).forRoutes('/item*');
-    consumer.apply(JwtMiddlewareUser).forRoutes('/item/*');
+    consumer.apply(JwtMiddlewareAdmin).forRoutes('/item*');
+    consumer.apply(JwtMiddlewareAdmin).forRoutes('/item/*');
   }
 }

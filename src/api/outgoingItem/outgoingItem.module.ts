@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { JwtAuthModule } from 'src/jwt/jwt.module';
 import { TokenService } from 'src/jwt/jwt.service';
-import { JwtMiddlewareUser } from 'src/middleware/jwt.middleware';
+import { JwtMiddlewareAdmin } from 'src/middleware/jwt.middlewareAdmin';
 import { OutgoingItemController } from './outgoingItem.controller';
 import { OutgoingItemService } from './outgoingItem.service';
 
@@ -12,7 +12,7 @@ import { OutgoingItemService } from './outgoingItem.service';
 })
 export class OutgoingItemModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddlewareUser).forRoutes('/outgoing-item*');
-    consumer.apply(JwtMiddlewareUser).forRoutes('/outgoing-item/*');
+    consumer.apply(JwtMiddlewareAdmin).forRoutes('/outgoing-item*');
+    consumer.apply(JwtMiddlewareAdmin).forRoutes('/outgoing-item/*');
   }
 }

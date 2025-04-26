@@ -25,6 +25,8 @@ export class JwtMiddlewareUser implements NestMiddleware {
     try {
       const payload = this.tokenService.verifyAccessToken(token);
       req['user'] = payload;
+
+      console.log(req['user']);
       next();
     } catch (err) {
       console.log(err);

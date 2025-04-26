@@ -199,7 +199,7 @@ export class AuthenticationService {
     }
 
     // return access token and refresh token;
-    const payload = { user_id: user.userId };
+    const payload = { user_id: user.userId, role: user.role };
     const accessToken = this.tokenService.generateAccessToken(payload);
 
     this.logger.info(
@@ -470,6 +470,7 @@ export class AuthenticationService {
       },
       select: {
         userId: true,
+        role: true,
       },
     });
 
@@ -518,7 +519,7 @@ export class AuthenticationService {
       },
     });
 
-    const payload = { user_id: getUser.userId };
+    const payload = { user_id: getUser.userId, role: getUser.role };
     const accessToken = this.tokenService.generateAccessToken(payload);
 
     return {

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthModule } from 'src/jwt/jwt.module';
 import { TokenService } from 'src/jwt/jwt.service';
-import { JwtMiddlewareUser } from 'src/middleware/jwt.middleware';
+import { JwtMiddlewareUser } from 'src/middleware/jwt.middlewareUser';
 import { RateLimitMiddleware } from 'src/middleware/LimitSendEmail.middleware';
 import { OtpVerificationRateLimitMiddleware } from 'src/middleware/LimitValidateOtp.middleware';
 import { RabbitModule } from 'src/rabbitMq/rabbitmq.module';

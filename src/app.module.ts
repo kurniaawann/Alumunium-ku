@@ -5,6 +5,7 @@ import { IncomingItemModule } from './api/incominngItem/incomingItem.module';
 import { ItemModule } from './api/items/items.module';
 import { OutgoingItemModule } from './api/outgoingItem/outgoingItem.module';
 import { CommanModule } from './common/comman.module';
+import { OtpModule } from './cornJobOtp/cronjob.module';
 import { JwtAuthModule } from './jwt/jwt.module';
 import { RabbitModule } from './rabbitMq/rabbitmq.module';
 
@@ -17,6 +18,7 @@ import { RabbitModule } from './rabbitMq/rabbitmq.module';
     ItemModule,
     IncomingItemModule,
     OutgoingItemModule,
+    OtpModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
