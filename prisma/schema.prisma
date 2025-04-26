@@ -7,14 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ChangeType {
+  IN
+  OUT
+  USED
+  OUT_EDIT
+  OUT_DELETE
+  IN_EDIT
+  IN_DELETE
+}
+
+enum Role {
+  user
+  admin
+}
+
 model User {
-  userId        String       @id  @map("user_id")         // Primary key
-  userName      String    @db.VarChar(255) @map("user_name")
+  userId        String   @id  @map("user_id")         // Primary key
+  userName      String   @db.VarChar(255) @map("user_name")
   noHandphone   String   @unique @db.VarChar(15) @map("no_handphone")                                       // Nama user
   email         String   @unique @db.VarChar(255)                                                         // Email user
   password      String                                                          // Password user (hash)
   createdAt     DateTime  @default(now())        @map("created_at")
-  isVerified    Boolean  @default(false) @map("is_verified")            // Tanggal pembuatan akun
+  isVerified    Boolean  @default(false) @map("is_verified")  
+  role Role @default(user)
 
   otp          Otp []      // Relasi ke Otp
   stockLogs    StockLog[]                                             // Relasi ke stock_logs
@@ -117,12 +133,3 @@ model UsedItem {
   @@map("used_items")
 }
 
-enum ChangeType {
-  IN
-  OUT
-  USED
-  OUT_EDIT
-  OUT_DELETE
-  IN_EDIT
-  IN_DELETE
-}
