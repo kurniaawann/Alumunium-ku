@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-   previewFeatures = ["groupBy", "nativeTypes"]
 }
 
 datasource db {
@@ -132,6 +131,8 @@ model ProjectItem {
   name    String
   price   Int     // harga per 1 unit/batang
   projectItemOnProject    ProjectItemOnProject[]
+
+  @@map("project_item")
 }
 
 model Project {
@@ -139,11 +140,16 @@ model Project {
   projectName String  @map("project_name")
   description String
   address String  
-  startDate   DateTime @map("start_date")
+  startDate   DateTime? @map("start_date")
   endDate     DateTime? @map("end_date")
   status      Status @default(PENDING)
-  totalCost   Int     @map("total_cost")       // total modal proyek
+  totalCost   Int     @map("total_cost")
+  
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
   projectItems ProjectItemOnProject[]
+
+  @@map("project")
 }
 
 model ProjectItemOnProject {
@@ -155,4 +161,6 @@ model ProjectItemOnProject {
 
   project Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
   projectItem    ProjectItem @relation(fields: [projectItemId], references: [projectItemId], onDelete: Cascade)
+
+  @@map("project_item_on_project")
 }
