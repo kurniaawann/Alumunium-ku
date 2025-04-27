@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SnakeCaseInterceptor } from './utils/SnakeCaseInceptor';
+import { TimezoneInterceptor } from './utils/timezone.inceptor';
 // import { SnakeCaseInterceptor } from './utils/SnakeCaseInterceptor';
 
 async function bootstrap() {
@@ -23,6 +24,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   // Register interceptor sebelum app.listen
   app.useGlobalInterceptors(new SnakeCaseInterceptor());
+  app.useGlobalInterceptors(new TimezoneInterceptor());
 
   // Jalankan aplikasi
   await app.listen(port);
