@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+   previewFeatures = ["groupBy", "nativeTypes"]
 }
 
 datasource db {
@@ -20,6 +21,13 @@ enum ChangeType {
 enum Role {
   user
   admin
+}
+
+enum Status {
+  PENDING
+  PROGRESS
+  COMPLETED
+  CANCELLED 
 }
 
 model User {
@@ -69,7 +77,6 @@ model Item {
 
   incomingItems IncomingItem[]
   outgoingItems OutgoingItem[]
-  usetItem       UsedItem[]
   stockLog      StockLog[]
 
   @@map("items")
@@ -120,16 +127,32 @@ model StockLog {
   @@map("stock_logs")
 }
 
-model UsedItem {
-  usedItemId  String       @id  @map("used_item_id")       // Primary key
-  itemId      String                                        @map("item_id")         // Foreign key ke item
-  quantity    Int                                                                  // Jumlah barang yang digunakan
-  usedBy      String    @db.VarChar(100)                @map("used_by")           // Digunakan oleh siapa
-  purpose     String    @db.Text                                                  // Keperluan penggunaan (opsional)
-  createdAt   DateTime  @default(now())                  @map("created_at")       // Waktu digunakan
-
-  item        Item      @relation(fields: [itemId], references: [itemId],onDelete: Cascade)        // Relasi ke item
-
-  @@map("used_items")
+model ProjectItem {
+  projectItemId      String     @id @map("project_item_id")
+  name    String
+  price   Int     // harga per 1 unit/batang
+  projectItemOnProject    ProjectItemOnProject[]
 }
 
+model Project {
+  projectId          String           @id @map("project_id")
+  projectName String  @map("project_name")
+  description String
+  address String  
+  startDate   DateTime @map("start_date")
+  endDate     DateTime? @map("end_date")
+  status      Status @default(PENDING)
+  totalCost   Int     @map("total_cost")       // total modal proyek
+  projectItems ProjectItemOnProject[]
+}
+
+model ProjectItemOnProject {
+  projectItemOnProjectId              String   @id @map("project_item_on_project_id") 
+  projectId       String @map("project_id")
+  projectItemId   String @map("project_item_id")
+  quantity        Int 
+  priceAtThatTime Int @map("price_at_that_time") 
+
+  project Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  projectItem    ProjectItem @relation(fields: [projectItemId], references: [projectItemId], onDelete: Cascade)
+}
