@@ -74,7 +74,7 @@ export class AuthenticationController {
   @Post('/forgot/password')
   @HttpCode(HttpStatus.CREATED)
   async forgotPassword(@Request() req, @Body() request: ForgotPasswordDto) {
-    const userId: string = req.user.user_id;
+    const userId: string = req.user_id;
     const result = await this.authenticationService.forgotPassword(
       request,
       userId,

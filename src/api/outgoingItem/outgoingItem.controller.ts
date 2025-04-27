@@ -22,7 +22,7 @@ export class OutgoingItemController {
     @Param('id') itemId: string,
     @Request() req,
   ) {
-    const userId: string = req.user.user_id;
+    const userId: string = req.user_id;
     const result = await this.outgoingItemService.createOutgoingItemService(
       request,
       itemId,
@@ -37,7 +37,7 @@ export class OutgoingItemController {
     @Param('id') outgoingItem: string,
     @Request() req,
   ) {
-    const userId: string = req.user.user_id;
+    const userId: string = req.user_id;
     const result = await this.outgoingItemService.editOutgoingItemService(
       request,
       outgoingItem,
@@ -48,7 +48,7 @@ export class OutgoingItemController {
 
   @Delete('/:id')
   async deleteOutgoingItem(@Param('id') id: string, @Request() req) {
-    const userId: string = req.user.user_id;
+    const userId: string = req.user_id;
     const result = await this.outgoingItemService.deleteOutgoingItemService(
       id,
       userId,
