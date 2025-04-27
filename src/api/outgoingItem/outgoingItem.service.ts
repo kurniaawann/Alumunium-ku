@@ -33,6 +33,12 @@ export class OutgoingItemService {
       },
     });
 
+    const existingUserId = await this.prismaService.user.findUnique({
+      where: {
+        userId: userId,
+      },
+    });
+
     if (!existingItem) {
       throw new NotFoundException('Item tidak ditemukan.');
     }
@@ -41,7 +47,7 @@ export class OutgoingItemService {
       throw new NotFoundException('Stok tidak mencukupi.');
     }
 
-    if (!userId) {
+    if (!existingUserId) {
       throw new NotFoundException(
         StringResource.GLOBAL_FAILURE_MESSAGE.USER_NOT_FOUND,
       );

@@ -1,13 +1,13 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Post,
-    Put,
-    Query,
-    Request,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Request,
 } from '@nestjs/common';
 import { IncomingItemDto } from 'src/DTO/dto.incomingItem';
 import { IncomingItemService } from './incomingItem.service';
@@ -20,7 +20,7 @@ export class IncomingItemController {
     @Body('incomingItem') request: IncomingItemDto[],
     @Request() req,
   ) {
-    const userId: string = req.user_id;
+    const userId: string = req.user.user_id;
     const result = await this.incomingItemService.createIncomingItemService(
       request,
       userId,
@@ -34,7 +34,7 @@ export class IncomingItemController {
     @Request() req,
     @Param('id') id: string,
   ) {
-    const userId: string = req.user_id;
+    const userId: string = req.user.user_id;
     const result = await this.incomingItemService.editIncomingItemService(
       request,
       userId,
@@ -45,7 +45,7 @@ export class IncomingItemController {
 
   @Delete('/:id')
   async deleteIncomingItem(@Request() req, @Param('id') id: string) {
-    const userId: string = req.user_id;
+    const userId: string = req.user.user_id;
     const result = await this.incomingItemService.deleteIncomingItemService(
       userId,
       id,

@@ -17,7 +17,7 @@ export class ItemController {
   constructor(private itemService: ItemService) {}
   @Post('')
   async createItem(@Body('items') request: ItemDto[], @Request() req) {
-    const userId: string = req.user_id;
+    const userId: string = req.user.user_id;
     console.log(userId);
     const result = await this.itemService.createItemService(request, userId);
     return result;
@@ -29,13 +29,13 @@ export class ItemController {
     @Param('id') id: string,
     @Request() req,
   ) {
-    const userId: string = req.user_id;
+    const userId: string = req.user.user_id;
     const result = await this.itemService.editItemService(request, id, userId);
     return result;
   }
   @Delete('/:id')
   async deleteItem(@Param('id') id: string, @Request() req) {
-    const userId: string = req.user_id;
+    const userId: string = req.user.user_id;
     const result = await this.itemService.deleteItemService(id, userId);
     return result;
   }

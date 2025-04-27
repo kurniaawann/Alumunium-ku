@@ -35,12 +35,15 @@ export class JwtMiddlewareAdmin implements NestMiddleware {
 
     req['user'] = payload;
 
+    console.log(payload);
+
+    console.log(req['user']);
+
     // 👉 Validasi role setelah token valid
     if (req['user'].role !== 'admin') {
       throw new ForbiddenException('Anda tidak bisa mengakses resource ini');
     }
 
-    console.log(req['user']);
     next();
   }
 }

@@ -22,13 +22,13 @@ export class OutgoingItemModule implements NestModule {
       .apply(JwtMiddlewareUser)
       .forRoutes(
         { path: 'outgoing-item/all', method: RequestMethod.GET },
-        { path: 'outgoing-item//:id/detail/item', method: RequestMethod.GET },
+        { path: 'outgoing-item/:id/detail/item', method: RequestMethod.GET },
       );
 
     consumer
       .apply(JwtMiddlewareAdmin)
       .forRoutes(
-        { path: 'outgoing-item', method: RequestMethod.POST },
+        { path: 'outgoing-item/:id', method: RequestMethod.POST },
         { path: 'outgoing-item/:id', method: RequestMethod.PUT },
         { path: 'outgoing-item/:id', method: RequestMethod.DELETE },
       );

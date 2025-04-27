@@ -211,9 +211,11 @@ export class AuthenticationService {
         accessToken,
       },
     });
+
     return {
       data: {
         accessToken,
+        role: user.role,
       },
     };
   }
