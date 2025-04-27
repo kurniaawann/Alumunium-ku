@@ -28,7 +28,6 @@ export class TimezoneInterceptor implements NestInterceptor {
       return dayjs(obj).tz('Asia/Jakarta').format('YYYY-MM-DDTHH:mm:ss');
     }
     if (Array.isArray(obj)) {
-      s;
       return obj.map((item) => this.convertDatesToJakarta(item));
     }
     if (typeof obj === 'object') {

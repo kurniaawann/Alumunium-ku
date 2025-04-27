@@ -180,10 +180,6 @@ export class ItemService {
     const nextPage = calculateNextPage(validPageParams, totalPages);
     const previousPage = calculatePreviousPage(validPageParams);
 
-    const result = await this.prismaService.$queryRaw`SELECT NOW() as db_time`;
-    console.log('Database time:', result[0].db_time);
-    console.log('Application time:', new Date());
-
     return createPaginatedResponse({
       data: items,
       totalData,
