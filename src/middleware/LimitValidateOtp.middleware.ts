@@ -15,7 +15,8 @@ export class OtpVerificationRateLimitMiddleware implements NestMiddleware {
     { count: number; timestamp: number; blocked: boolean }
   > = new Map();
   private readonly maxAttempts = 3;
-  private readonly blockDuration = 10 * 60 * 1000;
+  // private readonly blockDuration = 10 * 60 * 1000;
+  private readonly blockDuration = 60 * 1000; // 1 menit
 
   use(req: Request, res: Response, next: NextFunction) {
     if (req.method === 'POST') {

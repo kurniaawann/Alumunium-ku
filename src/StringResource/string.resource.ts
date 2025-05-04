@@ -97,7 +97,7 @@ export class StringResource {
       'Email yang dimasukkan belum terdaftar, silahkan daftar terlebih dahulu.',
 
     ACCOUNT_NOT_VERIFIED:
-      'Akun Anda belum diverifikasi. Silakan periksa email Anda untuk melakukan verifikasi.',
+      'Akun Anda belum diverifikasi. Silakan lakukan verifikasi email',
     ACCOUNT_ALREADY_VERIFIED: 'Akun Anda sudah diverifikasi. Silakan login.',
 
     OTP_INVALID_OR_EXPIRED: 'Kode OTP tidak valid atau sudah kadaluarsa.',

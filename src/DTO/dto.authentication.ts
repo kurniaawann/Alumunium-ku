@@ -1,13 +1,10 @@
 import { Transform } from 'class-transformer';
 import {
   IsEmail,
-  IsInt,
   IsNotEmpty,
   IsString,
-  Length,
   Matches,
   MaxLength,
-  Min,
   MinLength,
 } from 'class-validator';
 import { StringResource } from 'src/StringResource/string.resource';
@@ -20,7 +17,7 @@ export class RegisterDto {
     message: StringResource.ERROR_MESSAGES_VALIDATE.NAME_MIN_LENGTH,
   })
   @MaxLength(50, {
-    message: StringResource.ERROR_MESSAGES_VALIDATE.NAME_MAX_LENGTH,
+    message: 'nama maksimal 50 karakter',
   })
   name: string;
 
@@ -34,6 +31,17 @@ export class RegisterDto {
     },
   )
   email: string;
+
+  @IsNotEmpty({
+    message: 'Alamat tidak boleh kosong',
+  })
+  @MinLength(5, {
+    message: 'Alamat minimal 5 karakter',
+  })
+  @MaxLength(255, {
+    message: 'Alamat maksimal 255 karakter',
+  })
+  address: string;
 
   @IsNotEmpty({
     message: StringResource.ERROR_MESSAGES_VALIDATE.PHONE_REQUIRED,
@@ -103,13 +111,13 @@ export class VerificationCodeOtpDto {
   @IsNotEmpty({
     message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_REQUIRED,
   })
-  @Length(6, 6, {
-    message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
-  })
-  @Matches(/^\d{6}$/, {
-    message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_FORMAT,
-  })
-  @Transform(({ value }) => value?.trim())
+  // @Length(6, 6, {
+  //   message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
+  // })
+  // @Matches(/^\d{6}$/, {
+  //   message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_FORMAT,
+  // })
+  // @Transform(({ value }) => value?.trim())
   codeOtp: string;
 }
 
@@ -121,7 +129,7 @@ export class ResendVerificationCodeOtpDto {
   email: string;
 }
 
-export class ForgotPasswordDto {
+export class ChangepasswordDto {
   @IsNotEmpty({
     message: StringResource.ERROR_MESSAGES_VALIDATE.OLD_PASSWORD_REQUIRED,
   })
@@ -170,11 +178,11 @@ export class VerificationForgotPasswordDto {
   @IsNotEmpty({
     message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_REQUIRED,
   })
-  @IsInt({ message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_FORMAT })
-  @Min(100000, {
-    message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
-  })
-  codeOtp: number;
+  // @IsInt({ message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_FORMAT })
+  // @Min(100000, {
+  //   message: StringResource.ERROR_MESSAGES_VALIDATE.CODE_OTP_LENGTH,
+  // })
+  codeOtp: string;
 }
 
 export class accessTokenDto {
@@ -185,4 +193,24 @@ export class accessTokenDto {
     message: StringResource.ERROR_MESSAGES_VALIDATE.ACCESS_TOKEN_TIPE,
   })
   accessToken: string;
+}
+
+export class ForgotPasswordDto {
+  @IsNotEmpty({
+    message: StringResource.ERROR_MESSAGES_VALIDATE.OLD_PASSWORD_REQUIRED,
+  })
+  @MinLength(8, {
+    message: StringResource.ERROR_MESSAGES_VALIDATE.PASSWORD_MIN_LENGTH,
+  })
+  @Matches(/[a-zA-Z]/, {
+    message: StringResource.ERROR_MESSAGES_VALIDATE.PASSWORD_LETTERS,
+  })
+  @Matches(/[0-9]/, {
+    message: StringResource.ERROR_MESSAGES_VALIDATE.PASSWORD_NUMBERS,
+  })
+  @Matches(/[^a-zA-Z0-9]/, {
+    message: StringResource.ERROR_MESSAGES_VALIDATE.PASSWORD_SPECIAL_CHARACTERS,
+  })
+  @Transform(({ value }) => value?.trim())
+  newPassword: string;
 }
