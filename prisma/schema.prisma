@@ -33,7 +33,8 @@ model User {
   userId        String   @id  @map("user_id")         // Primary key
   userName      String   @db.VarChar(255) @map("user_name")
   noHandphone   String   @unique @db.VarChar(15) @map("no_handphone")                                       // Nama user
-  email         String   @unique @db.VarChar(255)                                                         // Email user
+  email         String   @unique @db.VarChar(255)
+  address       String   @db.VarChar(255)                                                         // Email user
   password      String                                                          // Password user (hash)
   createdAt     DateTime  @default(now())        @map("created_at")
   isVerified    Boolean  @default(false) @map("is_verified")  
