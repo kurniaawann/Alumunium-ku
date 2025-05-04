@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthenticationModule } from './api/authentication/authentication.module';
+import { HomeModule } from './api/home/home.module';
 import { IncomingItemModule } from './api/incominngItem/incomingItem.module';
 import { ItemModule } from './api/items/items.module';
 import { OutgoingItemModule } from './api/outgoingItem/outgoingItem.module';
@@ -23,6 +24,7 @@ import { RabbitModule } from './rabbitMq/rabbitmq.module';
     OtpModule,
     ProjectModule,
     projectItemModule,
+    HomeModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

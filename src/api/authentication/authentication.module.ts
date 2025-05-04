@@ -44,14 +44,10 @@ export class AuthenticationModule implements NestModule {
         },
       )
       .apply(JwtMiddlewareUser)
-      .forRoutes({
-        path: '/authentication/forgot/password',
-        method: RequestMethod.POST,
-      })
-      .apply(JwtMiddlewareUser)
-      .forRoutes({
-        path: '/authentication/logout',
-        method: RequestMethod.DELETE,
-      });
+      .forRoutes(
+        { path: '/authentication/forgot/password', method: RequestMethod.POST },
+        { path: '/authentication/logout', method: RequestMethod.DELETE },
+        { path: '/authentication/change/password', method: RequestMethod.POST },
+      );
   }
 }

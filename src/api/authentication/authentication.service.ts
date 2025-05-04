@@ -12,6 +12,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import {
   accessTokenDto,
+  ChangepasswordDto,
   ForgotPasswordDto,
   LoginDto,
   RegisterDto,
@@ -35,6 +36,7 @@ export class AuthenticationService {
     private readonly rabbitMqService: RabbitMqService,
     private readonly otpVerificationMiddleware: OtpVerificationRateLimitMiddleware,
     private tokenService: TokenService,
+    private readonly otpVerificationRateLimitMiddleware: OtpVerificationRateLimitMiddleware,
   ) {
     this.rabbitMqService.producer(StringResource.QUEUE_NAME.REGISTER_QUEUE);
     this.rabbitMqService.producer(
@@ -86,6 +88,7 @@ export class AuthenticationService {
     // Buat User Baru
     await this.prismaService.user.create({
       data: {
+        address: request.address,
         userId: generateUserId,
         userName: request.name,
         email: request.email,
@@ -406,8 +409,8 @@ export class AuthenticationService {
     };
   }
 
-  async forgotPassword(
-    request: ForgotPasswordDto,
+  async changePassword(
+    request: ChangepasswordDto,
     userId: string,
   ): Promise<object> {
     // Find user
@@ -476,6 +479,8 @@ export class AuthenticationService {
       },
     });
 
+    console.log(!getUser);
+
     if (!getUser) {
       throw new NotFoundException(
         StringResource.FAILURE_MESSAGES_AUTHENTICATION.EMAIL_NOT_REGISTERED,
@@ -485,7 +490,7 @@ export class AuthenticationService {
     // Cek verifikasi OTP
     const checkOtpVerification = await this.prismaService.otp.findFirst({
       where: {
-        otpCode: request.codeOtp.toString(),
+        otpCode: request.codeOtp,
         userId: getUser.userId,
       },
     });
@@ -524,6 +529,11 @@ export class AuthenticationService {
     const payload = { user_id: getUser.userId, role: getUser.role };
     const accessToken = this.tokenService.generateAccessToken(payload);
 
+    this.otpVerificationRateLimitMiddleware.resetAttempts(
+      'authentication/user/forgot-password/verification',
+      request.email,
+    );
+
     return {
       statusCode: HttpStatus.CREATED,
       message:
@@ -548,6 +558,37 @@ export class AuthenticationService {
     return {
       statusCode: HttpStatus.CREATED,
       message: StringResource.SUCCESS_MESSAGES_AUTHENTICATION.LOGOUT_SUCCESS,
+    };
+  }
+
+  async forgotPasswordService(request: ForgotPasswordDto, userId: string) {
+    // Find user
+    const user = await this.prismaService.user.findUnique({
+      where: { userId: userId },
+    });
+
+    if (!user) {
+      this.logger.warn(
+        StringResource.FAILURE_MESSAGES_AUTHENTICATION.EMAIL_NOT_REGISTERED,
+      );
+      throw new NotFoundException(
+        StringResource.FAILURE_MESSAGES_AUTHENTICATION.EMAIL_NOT_REGISTERED,
+      );
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(request.newPassword, 10);
+
+    // Update password
+    await this.prismaService.user.update({
+      where: { userId: user.userId },
+      data: { password: hashedPassword },
+    });
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message:
+        StringResource.SUCCESS_MESSAGES_AUTHENTICATION.PASSWORD_CHANGED_SUCCESS,
     };
   }
 }

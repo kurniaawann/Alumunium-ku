@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   accessTokenDto,
+  ChangepasswordDto,
   ForgotPasswordDto,
   LoginDto,
   RegisterDto,
@@ -47,6 +48,7 @@ export class AuthenticationController {
       request,
       req.url,
     );
+
     return result;
   }
   @Post('/send/otp')
@@ -71,11 +73,11 @@ export class AuthenticationController {
     return result;
   }
 
-  @Post('/forgot/password')
+  @Post('/change/password')
   @HttpCode(HttpStatus.CREATED)
-  async forgotPassword(@Request() req, @Body() request: ForgotPasswordDto) {
-    const userId: string = req.user_id;
-    const result = await this.authenticationService.forgotPassword(
+  async changePassword(@Request() req, @Body() request: ChangepasswordDto) {
+    const userId: string = req.user.user_id;
+    const result = await this.authenticationService.changePassword(
       request,
       userId,
     );
@@ -86,6 +88,18 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   async logout(@Body() request: accessTokenDto) {
     const result = await this.authenticationService.logoutService(request);
+    return result;
+  }
+
+  @Post('/forgot/password')
+  @HttpCode(HttpStatus.CREATED)
+  async forgotPassword(@Request() req, @Body() request: ForgotPasswordDto) {
+    const userId: string = req.user.user_id;
+    const result = await this.authenticationService.forgotPasswordService(
+      request,
+      userId,
+    );
+
     return result;
   }
 }
